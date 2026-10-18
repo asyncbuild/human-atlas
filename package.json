@@ -9,7 +9,12 @@
     "dev": "vite --host 0.0.0.0 --port 3016",
     "build": "vite build",
     "build:vercel": "vite build",
-    "check": "tsc --noEmit"
+    "check": "tsc --noEmit",
+    "validate:guides": "node scripts/validate-guides.mjs",
+    "validate:learning": "node scripts/validate-learning.mjs",
+    "validate:dissection": "node scripts/validate-dissection.mjs",
+    "validate:relationships": "node scripts/validate-relationships.mjs",
+    "test": "npm run check && node scripts/validate-atlas.mjs && node scripts/validate-interactions.mjs && node scripts/validate-guides.mjs && node scripts/validate-learning.mjs && node scripts/validate-dissection.mjs && node scripts/validate-relationships.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",
