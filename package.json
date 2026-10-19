@@ -14,7 +14,11 @@
     "validate:learning": "node scripts/validate-learning.mjs",
     "validate:dissection": "node scripts/validate-dissection.mjs",
     "validate:relationships": "node scripts/validate-relationships.mjs",
-    "test": "npm run check && node scripts/validate-atlas.mjs && node scripts/validate-interactions.mjs && node scripts/validate-guides.mjs && node scripts/validate-learning.mjs && node scripts/validate-dissection.mjs && node scripts/validate-relationships.mjs"
+    "validate:search": "node scripts/validate-anatomy-search.mjs",
+    "validate:learning-progress": "node scripts/validate-learning-progress.mjs",
+    "validate:citations": "node scripts/validate-citations.mjs",
+    "validate:camera-framing": "node scripts/validate-camera-framing.mjs",
+    "test": "npm run check && node scripts/validate-atlas.mjs && node scripts/validate-interactions.mjs && node scripts/validate-guides.mjs && node scripts/validate-learning.mjs && node scripts/validate-dissection.mjs && node scripts/validate-relationships.mjs && node scripts/validate-anatomy-search.mjs && node scripts/validate-learning-progress.mjs && node scripts/validate-citations.mjs && node scripts/validate-camera-framing.mjs"
   },
   "dependencies": {
     "@base-ui/react": "1.7.0",

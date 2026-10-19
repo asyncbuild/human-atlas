@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import { readFile } from 'node:fs/promises';
-import { DISSECTION_PRESETS, DISSECTION_LAYERS, INITIAL_CLIPPING_STATE } from '../app/dissection.ts';
+import {
+  DISSECTION_PRESETS,
+  DISSECTION_LAYERS,
+  INITIAL_CLIPPING_STATE,
+  resolveEffectiveClippingState
+} from '../app/dissection.ts';
 import { SYSTEMS, DEFAULT_VISIBLE } from '../app/anatomy.ts';
 
 const atlas = JSON.parse(await readFile(new URL('../public/models/atlas.json', import.meta.url)));
@@ -66,4 +71,64 @@ assert.ok(min[0] <= -0.30 && max[0] >= 0.30, 'Atlas X bounds span body width');
 // Coronal plane range (Z: -0.14 to +0.14)
 assert.ok(min[2] <= -0.14 && max[2] >= 0.14, 'Atlas Z bounds span body depth');
 
-console.log('\nAll dissection presets, progressive layers, and cross-section clipping specifications passed validation.');
+// 4. REGRESSION TEST: BUG-DIS-01 - Cross-Section Clipping Lifecycle & State Leak Prevention
+// Test A: Effective clipping state resolution guarantees no clipping leak outside Dissection Mode
+const activeCut = {
+  enabled: true,
+  orientation: 'axial',
+  offset: 45,
+  inverted: false
+};
+
+// When Dissection Mode is closed, effective clipping MUST be INITIAL_CLIPPING_STATE (disabled)
+const closedEffective = resolveEffectiveClippingState(false, false, false, activeCut);
+assert.equal(closedEffective.enabled, false, 'Regression BUG-DIS-01: Clipping must NOT be enabled when dissection is closed');
+assert.deepEqual(closedEffective, INITIAL_CLIPPING_STATE, 'Closed dissection must resolve to INITIAL_CLIPPING_STATE');
+
+// When Dissection Mode is open with no overlays, active clipping is preserved
+const openEffective = resolveEffectiveClippingState(true, false, false, activeCut);
+assert.equal(openEffective.enabled, true, 'Clipping must be active when dissection is open and no overlays active');
+assert.equal(openEffective.offset, 45);
+
+// When a Guided Tour is active, clipping must be suppressed
+const guideSuppressed = resolveEffectiveClippingState(true, true, false, activeCut);
+assert.equal(guideSuppressed.enabled, false, 'Regression BUG-DIS-01: Active Guided Tour must suppress clipping plane');
+
+// When Learning Mode is active, clipping must be suppressed
+const learningSuppressed = resolveEffectiveClippingState(true, false, true, activeCut);
+assert.equal(learningSuppressed.enabled, false, 'Regression BUG-DIS-01: Active Learning challenge must suppress clipping plane');
+
+// Test B: Lifecycle simulation of user closing, reopening, and resetting clipping
+let simDissectionOpen = false;
+let simClipping = INITIAL_CLIPPING_STATE;
+
+const closeDissectionSim = () => {
+  simDissectionOpen = false;
+  simClipping = INITIAL_CLIPPING_STATE;
+};
+
+// 1. User enters Dissection Mode
+simDissectionOpen = true;
+assert.equal(resolveEffectiveClippingState(simDissectionOpen, false, false, simClipping).enabled, false);
+
+// 2. User enables and offsets clipping
+simClipping = { enabled: true, orientation: 'axial', offset: 50, inverted: false };
+assert.equal(resolveEffectiveClippingState(simDissectionOpen, false, false, simClipping).enabled, true);
+
+// 3. User closes Dissection Mode (Free Exploration button / Escape / mode switch)
+closeDissectionSim();
+assert.equal(simDissectionOpen, false);
+assert.equal(resolveEffectiveClippingState(simDissectionOpen, false, false, simClipping).enabled, false, 'Free exploration must have uncut model');
+
+// 4. User reopens Dissection Mode -> starts from clean unclipped state
+simDissectionOpen = true;
+assert.equal(simClipping.enabled, false, 'Reopening dissection must start with clipping disabled');
+assert.equal(resolveEffectiveClippingState(simDissectionOpen, false, false, simClipping).enabled, false);
+
+// 5. User re-enables and resets clipping
+simClipping = { enabled: true, orientation: 'sagittal', offset: 30, inverted: true };
+assert.equal(resolveEffectiveClippingState(simDissectionOpen, false, false, simClipping).enabled, true);
+simClipping = INITIAL_CLIPPING_STATE; // Reset Plane button
+assert.equal(resolveEffectiveClippingState(simDissectionOpen, false, false, simClipping).enabled, false);
+
+console.log('\nAll dissection presets, progressive layers, cross-section clipping specifications, and BUG-DIS-01 lifecycle regression checks passed.');

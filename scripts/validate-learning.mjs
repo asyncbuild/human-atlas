@@ -72,3 +72,136 @@ console.log(`- ${identificationCount} 3D structure identification questions`);
 console.log(`- ${multipleChoiceCount} multiple-choice questions`);
 console.log(`- ${trueFalseCount} true/false questions`);
 console.log(`All target concepts, mesh elements, and knowledge entries confirmed.`);
+
+// ==========================================
+// REGRESSION TESTS: BUG-LRN-01 Concept Targeting
+// ==========================================
+import { filterQuestions, getConceptLearningInfo } from '../app/learning.ts';
+
+console.log('Testing BUG-LRN-01 Concept Targeting in filterQuestions and getConceptLearningInfo...');
+
+// 1. Concept with direct question (Heart: FMA7088)
+const heartInfo = getConceptLearningInfo('FMA7088');
+assert.equal(heartInfo.hasDirectQuestion, true, 'Heart should have direct question');
+assert.ok(heartInfo.directQuestionsCount >= 1, 'Heart should have at least 1 direct question');
+
+const heartConfig = {
+  category: 'cardiopulmonary',
+  difficulty: 'all',
+  questionCount: 5
+};
+const heartQuestions = filterQuestions(heartConfig, 'FMA7088');
+assert.equal(heartQuestions.length, 5, 'Should return configured number of questions');
+assert.equal(heartQuestions[0].targetConceptId, 'FMA7088', 'Target concept question must be placed first in pool');
+// Verify no duplicates
+const heartQuestionIds = new Set(heartQuestions.map(q => q.id));
+assert.equal(heartQuestionIds.size, heartQuestions.length, 'Questions must not contain duplicates');
+
+// 2. Category filtering consistency
+const skeletalConfig = {
+  category: 'skeletal',
+  difficulty: 'all',
+  questionCount: 10
+};
+const skeletalQuestions = filterQuestions(skeletalConfig);
+for (const q of skeletalQuestions) {
+  assert.equal(q.system, 'skeletal', `Category skeletal should only yield skeletal questions, found ${q.system}`);
+}
+
+const neuroConfig = {
+  category: 'neuro',
+  difficulty: 'all',
+  questionCount: 10
+};
+const neuroQuestions = filterQuestions(neuroConfig);
+for (const q of neuroQuestions) {
+  assert.equal(q.system, 'nervous', `Category neuro should only yield nervous questions, found ${q.system}`);
+}
+
+// 3. Fallback when concept has no direct question (e.g. Right Lung: FMA7309)
+const rightLungInfo = getConceptLearningInfo('FMA7309');
+assert.equal(rightLungInfo.hasDirectQuestion, false, 'Right lung has no direct question in current question bank');
+assert.equal(rightLungInfo.directQuestionsCount, 0);
+
+const fallbackConfig = {
+  category: 'cardiopulmonary',
+  difficulty: 'all',
+  questionCount: 4
+};
+const fallbackQuestions = filterQuestions(fallbackConfig, 'FMA7309');
+assert.equal(fallbackQuestions.length, 4, 'Should fallback and return questions from category');
+for (const q of fallbackQuestions) {
+  assert.ok(
+    q.system === 'cardiac' || q.system === 'respiratory' || q.system === 'muscular',
+    'Fallback questions must be valid cardiopulmonary questions'
+  );
+  // Ensure no fake questions are fabricated
+  assert.ok(QUESTION_BANK.some(bankQ => bankQ.id === q.id), 'All questions must come from verified QUESTION_BANK');
+}
+
+// 4. Generic mode without concept ID
+const genericQuestions = filterQuestions({ category: 'all', difficulty: 'all', questionCount: 5 });
+assert.equal(genericQuestions.length, 5, 'Generic mode returns requested question count');
+assert.equal(new Set(genericQuestions.map(q => q.id)).size, 5, 'Generic mode returns distinct questions');
+
+console.log('✓ BUG-LRN-01 regression tests PASSED.');
+
+// ==========================================
+// REGRESSION TESTS: ERR-KNOW-01 Bilateral Knowledge Descriptions
+// ==========================================
+console.log('Testing ERR-KNOW-01 Bilateral Knowledge Descriptions in KNOWLEDGE_BASE...');
+
+// 1. Femur (Bilateral) FMA9611
+const femurBilateral = KNOWLEDGE_BASE['FMA9611'];
+assert.ok(femurBilateral, 'KNOWLEDGE_BASE must contain FMA9611');
+assert.equal(femurBilateral.canonicalName, 'Femur (Bilateral)');
+assert.ok(
+  !femurBilateral.location.startsWith('Right lower extremity'),
+  'ERR-KNOW-01: Bilateral femur location must NOT claim right lower extremity as exclusive location'
+);
+assert.ok(
+  femurBilateral.location.toLowerCase().includes('bilateral lower extremities') ||
+  femurBilateral.location.toLowerCase().includes('each thigh'),
+  'ERR-KNOW-01: Bilateral femur location must describe bilateral lower extremities'
+);
+// Verify unilateral femurs retain proper lateralized locations
+assert.ok(KNOWLEDGE_BASE['FMA24474'].location.startsWith('Right lower extremity'));
+assert.ok(KNOWLEDGE_BASE['FMA24475'].location.startsWith('Left thigh'));
+
+// 2. Humerus (Bilateral) FMA13303
+const humerusBilateral = KNOWLEDGE_BASE['FMA13303'];
+assert.ok(humerusBilateral, 'KNOWLEDGE_BASE must contain FMA13303');
+assert.equal(humerusBilateral.canonicalName, 'Humerus (Bilateral)');
+assert.ok(
+  !humerusBilateral.location.startsWith('Right arm'),
+  'ERR-KNOW-01: Bilateral humerus location must NOT claim right arm as exclusive location'
+);
+assert.ok(
+  humerusBilateral.location.toLowerCase().includes('bilateral upper extremities') ||
+  humerusBilateral.location.toLowerCase().includes('each arm'),
+  'ERR-KNOW-01: Bilateral humerus location must describe bilateral upper extremities'
+);
+// Verify unilateral humeri retain proper lateralized locations
+assert.ok(KNOWLEDGE_BASE['FMA23130'].location.startsWith('Right arm'));
+assert.ok(KNOWLEDGE_BASE['FMA23131'].location.startsWith('Left arm'));
+
+// 3. Kidneys (Bilateral) FMA7203
+const kidneysBilateral = KNOWLEDGE_BASE['FMA7203'];
+assert.ok(kidneysBilateral, 'KNOWLEDGE_BASE must contain FMA7203');
+assert.equal(kidneysBilateral.canonicalName, 'Kidneys (Bilateral)');
+assert.ok(
+  kidneysBilateral.location.toLowerCase().includes('liver') &&
+  kidneysBilateral.location.toLowerCase().includes('spleen'),
+  'ERR-KNOW-01: Bilateral kidneys location must describe both right (liver) and left (spleen) visceral relations'
+);
+assert.ok(
+  kidneysBilateral.location.toLowerCase().includes('right kidney') &&
+  kidneysBilateral.location.toLowerCase().includes('left kidney'),
+  'ERR-KNOW-01: Bilateral kidneys location must differentiate right vs left anatomical relations'
+);
+// Verify unilateral kidneys retain proper lateralized relations
+assert.ok(KNOWLEDGE_BASE['FMA7204'].location.includes('liver'));
+assert.ok(KNOWLEDGE_BASE['FMA7205'].location.includes('spleen'));
+
+console.log('✓ ERR-KNOW-01 regression tests PASSED.');
+

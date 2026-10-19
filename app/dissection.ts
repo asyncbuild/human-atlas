@@ -123,3 +123,20 @@ export const INITIAL_CLIPPING_STATE: ClippingState = {
   offset: 65, // ~1.12m (thoracic / heart level)
   inverted: false
 };
+
+/**
+ * Resolves the effective clipping state passed to the 3D scene.
+ * Guarantees that clipping is only active when Dissection Mode is explicitly open
+ * and not suppressed by Guided Tours or Learning Mode.
+ */
+export function resolveEffectiveClippingState(
+  dissectionOpen: boolean,
+  activeGuide: boolean,
+  activeLearning: boolean,
+  clippingState: ClippingState
+): ClippingState {
+  if (!dissectionOpen || activeGuide || activeLearning) {
+    return INITIAL_CLIPPING_STATE;
+  }
+  return clippingState;
+}

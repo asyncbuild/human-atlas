@@ -1,4 +1,5 @@
 import type { SystemId, View, Atlas, Concept } from './anatomy';
+import { getCitationSource } from './citations.ts';
 
 export type QuestionType = 'identification' | 'multiple-choice' | 'true-false';
 export type QuestionDifficulty = 'Beginner' | 'Intermediate' | 'Advanced';
@@ -58,13 +59,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'Located in the middle mediastinum of the thoracic cavity, posterior to the sternum with its apex pointing anteroinferiorly to the left.',
     explanation:
       'The heart is a four-chambered muscular pump located in the middle mediastinum that drives systemic circulation and propels blood through the pulmonary circuit for gas exchange.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Heart',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK470256/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('heart')]
   },
 
   // 2. Multiple Choice: Heart Ventricular Wall
@@ -79,13 +74,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'This chamber generates high hydrostatic pressures to propel blood through the aortic valve into the systemic arterial circuit.',
     explanation:
       'The left ventricle features the thickest myocardial wall (roughly 3 times thicker than the right ventricle) to overcome systemic vascular resistance and pump blood throughout the entire body.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Heart',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK470256/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('heart')]
   },
 
   // 3. True/False: Pericardium Anchoring
@@ -100,13 +89,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'This anatomical anchor secures the heart position within the thorax during diaphragmatic respiration.',
     explanation:
       'True: The fibrous pericardium is fused inferiorly with the central tendon of the diaphragm, stabilizing cardiac position during respiratory motion and postural shifts.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Pericardium',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK537042/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('pericardium')]
   },
 
   // 4. Identification: Skull
@@ -123,13 +106,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'The superior-most osseous structure of the axial skeleton, enclosing the brain and supporting the facial apparatus.',
     explanation:
       'The human skull comprises 22 bones joined by immovable sutures (except the mandible), forming the neurocranium to shield the brain and the viscerocranium for facial structure and mastication.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Head and Neck, Skull',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK538180/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('skull')]
   },
 
   // 5. Multiple Choice: Longest Bone
@@ -144,13 +121,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'This bone constitutes the skeletal framework of the thigh, articulating with the pelvic acetabulum.',
     explanation:
       'The femur is the longest, heaviest, and strongest bone in the human body, engineered to absorb massive kinetic loads and transmit torso weight from the pelvic girdle to the tibia during bipedal locomotion.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Bony Pelvis and Lower Limb, Femur',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK532982/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('femur')]
   },
 
   // 6. Identification: Right Femur
@@ -167,13 +138,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'The major long bone of the right lower extremity, situated between the right hip joint and the right knee joint.',
     explanation:
       'The right femur articulates proximally with the acetabulum of the pelvis at the multi-axial hip joint and distally with the patella and tibia at the bicondylar knee joint.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Bony Pelvis and Lower Limb, Femur',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK532982/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('femur')]
   },
 
   // 7. Identification: Vertebral Column
@@ -190,13 +155,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'The segmented posterior axial osseous pillar extending from the base of the skull down to the pelvis.',
     explanation:
       'Composed of 33 stacked vertebrae (cervical, thoracic, lumbar, sacral, coccygeal), the vertebral column provides axial weight-bearing flexibility while enclosing and protecting the spinal cord.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Back, Vertebral Column',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK525969/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('vertebral_column')]
   },
 
   // 8. Identification: Diaphragm
@@ -213,13 +172,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'A large dome-shaped musculotendinous partition forming the floor of the thoracic cavity and the roof of the abdomen.',
     explanation:
       'The diaphragm is the primary motor of inspiration. Its contraction draws the central tendon inferiorly, increasing thoracic vertical volume and creating negative intrathoracic pressure that pulls air inward.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Diaphragm',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK537042/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('diaphragm')]
   },
 
   // 9. Multiple Choice: Phrenic Nerve
@@ -234,13 +187,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'This nerve arises from cervical spinal nerve roots C3, C4, and C5.',
     explanation:
       'The bilateral phrenic nerves (originating from anterior rami C3, C4, and C5) supply the sole motor innervation to the diaphragm as well as sensory innervation to its central tendon.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Diaphragm',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK537042/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('diaphragm')]
   },
 
   // 10. Identification: Trachea
@@ -257,13 +204,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'A midline tubular conduit in the superior mediastinum descending anterior to the esophagus.',
     explanation:
       'The trachea is a flexible cartilaginous conduit reinforced by 16–20 C-shaped hyaline cartilage rings that conduct ambient air between the larynx and the main bronchi at the carina.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Trachea',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK448074/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('trachea')]
   },
 
   // 11. Multiple Choice: Pulmonary Lobes
@@ -283,13 +224,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'The left lung has fewer lobes to accommodate the cardiac notch and impression created by the heart.',
     explanation:
       'The right lung is divided by horizontal and oblique fissures into 3 lobes (superior, middle, inferior), while the left lung is divided by a single oblique fissure into 2 lobes (superior and inferior).',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Lungs',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK470197/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('lungs')]
   },
 
   // 12. Identification: Left Lung
@@ -306,13 +241,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'Located in the left hemithorax, with a prominent cardiac impression accommodating the ventricular apex.',
     explanation:
       'The left lung occupies the left hemithorax. It features two lobes and the cardiac notch along its anterior border that directly conforms around the pericardial sac.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Lungs',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK470197/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('lungs')]
   },
 
   // 13. Identification: Liver
@@ -329,13 +258,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'The largest solid internal organ, situated in the right upper quadrant directly beneath the diaphragm.',
     explanation:
       'The liver is the body’s principal metabolic factory, weighing ~1.5 kg and functioning in plasma protein synthesis, bile production, glycogen storage, lipid metabolism, and detoxification.',
-    sources: [
-      {
-        title: 'StatPearls: Physiology, Liver',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK535438/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('liver_anatomy')]
   },
 
   // 14. Multiple Choice: Liver Dual Blood Supply
@@ -350,13 +273,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'The portal vein delivers nutrient-dense deoxygenated blood absorbed from the stomach, intestines, and spleen.',
     explanation:
       'The liver has a dual vascular supply: approximately 75% arrives via the portal vein (nutrient-rich venous blood from the intestines), while 25% arrives via the proper hepatic artery (oxygen-rich arterial blood).',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Liver',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK535438/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('liver_physiology')]
   },
 
   // 15. Identification: Brain
@@ -373,13 +290,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'Enclosed securely inside the protective bony neurocranium.',
     explanation:
       'The brain encompasses the cerebrum, diencephalon, cerebellum, and brainstem, functioning as the chief integration center for sensory perception, voluntary motor initiation, and autonomic regulation.',
-    sources: [
-      {
-        title: 'StatPearls: Neuroanatomy, Brain',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK537247/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('cerebral_cortex')]
   },
 
   // 16. Identification: Right Kidney
@@ -396,13 +307,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'A retroperitoneal bean-shaped organ located along the posterior abdominal wall on the right side.',
     explanation:
       'The right kidney sits retroperitoneally at the T12–L3 vertebral levels, functioning to filter nitrogenous wastes, regulate extracellular fluid volume and blood pressure, and maintain electrolyte equilibrium.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Kidneys',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK470397/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('kidneys')]
   },
 
   // 17. Multiple Choice: Asymmetric Kidney Position
@@ -422,13 +327,7 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'Consider the space occupied in the right hypochondrium by the largest solid internal organ.',
     explanation:
       'The right kidney lies approximately 1–2 cm lower than the left kidney because the large right lobe of the liver occupies the right hypochondrium immediately above it.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Kidneys',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK470397/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('kidneys')]
   },
 
   // 18. Identification: Stomach
@@ -445,17 +344,14 @@ export const QUESTION_BANK: LearningQuestion[] = [
     hint: 'A muscular J-shaped digestive reservoir in the left upper quadrant and epigastrium, inferior to the diaphragm.',
     explanation:
       'The stomach receives chewed bolus via the esophagus, secretes hydrochloric acid and pepsinogen for chemical digestion, and churns food into acidic chyme before pyloric passage to the duodenum.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Stomach',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK448165/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      }
-    ]
+    sources: [getCitationSource('stomach')]
   }
 ];
 
-export function filterQuestions(config: LearningSessionConfig): LearningQuestion[] {
+export function filterQuestions(
+  config: LearningSessionConfig,
+  targetConceptId?: string
+): LearningQuestion[] {
   let pool = [...QUESTION_BANK];
 
   if (config.category === 'skeletal') {
@@ -468,6 +364,15 @@ export function filterQuestions(config: LearningSessionConfig): LearningQuestion
     pool = pool.filter(q => q.system === 'nervous');
   }
 
+  if (targetConceptId) {
+    const directMatches = pool.filter(q => q.targetConceptId === targetConceptId);
+    let filteredPool = config.difficulty !== 'all' ? pool.filter(q => q.difficulty === config.difficulty) : pool;
+    const nonDirect = filteredPool.filter(q => q.targetConceptId !== targetConceptId);
+    const shuffledOthers = [...nonDirect].sort(() => 0.5 - Math.random());
+    const combined = [...directMatches, ...shuffledOthers];
+    return combined.slice(0, Math.min(config.questionCount, combined.length));
+  }
+
   if (config.difficulty !== 'all') {
     pool = pool.filter(q => q.difficulty === config.difficulty);
   }
@@ -475,6 +380,20 @@ export function filterQuestions(config: LearningSessionConfig): LearningQuestion
   // Shuffle pool deterministically or pseudo-randomly
   const shuffled = [...pool].sort(() => 0.5 - Math.random());
   return shuffled.slice(0, Math.min(config.questionCount, shuffled.length));
+}
+
+/**
+ * Resolves the question availability for a specific anatomical concept
+ */
+export function getConceptLearningInfo(conceptId: string): {
+  hasDirectQuestion: boolean;
+  directQuestionsCount: number;
+} {
+  const matches = QUESTION_BANK.filter(q => q.targetConceptId === conceptId);
+  return {
+    hasDirectQuestion: matches.length > 0,
+    directQuestionsCount: matches.length
+  };
 }
 
 /**

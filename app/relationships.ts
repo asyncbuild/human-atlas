@@ -1,4 +1,5 @@
 import type { SystemId } from './anatomy';
+import { formatRelationshipCitation } from './citations.ts';
 
 export type AnatomicalRelationshipType =
   | 'part_of'
@@ -105,7 +106,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'supplies',
     category: 'circulatory',
     explanation: 'The left ventricle ejects oxygenated systemic blood across the aortic valve directly into the ascending aorta during ventricular systole.',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Heart (NCBI Bookshelf NBK470256)',
+    sourceReference: formatRelationshipCitation('heart'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -116,7 +117,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'circulatory',
     explanation: 'The conus arteriosus of the right ventricle leads directly into the pulmonary semilunar valve and the pulmonary trunk to supply the pulmonary circuit.',
-    sourceReference: "Gray's Anatomy: The Anatomical Basis of Clinical Practice (42nd ed.)",
+    sourceReference: formatRelationshipCitation('grays_anatomy'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -127,7 +128,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'drains_into',
     category: 'circulatory',
     explanation: 'The superior vena cava drains deoxygenated systemic venous return from the head, neck, upper limbs, and thorax into the posterosuperior aspect of the right atrium.',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Superior Vena Cava (NCBI Bookshelf NBK519503)',
+    sourceReference: formatRelationshipCitation('svc'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -138,7 +139,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'drains_into',
     category: 'circulatory',
     explanation: 'The inferior vena cava ascends through the caval opening of the diaphragm to drain venous return from the abdomen, pelvis, and lower limbs into the posteroinferior right atrium.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Inferior Vena Cava (NCBI Bookshelf NBK482353)',
+    sourceReference: formatRelationshipCitation('ivc'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -149,7 +150,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The diaphragmatic surface of the heart rests upon the central tendon of the diaphragm, to which the fibrous pericardium is firmly and immovably fused.',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Pericardium (NCBI Bookshelf NBK535456)',
+    sourceReference: formatRelationshipCitation('pericardium'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -160,7 +161,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The right atrium and right ventricle produce a broad, shallow cardiac impression on the mediastinal surface of the right lung.',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Lungs (NCBI Bookshelf NBK470197)',
+    sourceReference: formatRelationshipCitation('lungs'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -171,7 +172,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The left ventricular apex projects anteroinferiorly to the left, deeply indenting the anterior margin of the left lung to form the cardiac notch.',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Lungs (NCBI Bookshelf NBK470197)',
+    sourceReference: formatRelationshipCitation('lungs'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -182,7 +183,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The body of the sternum and xiphoid process sit directly anterior to the anterior pericardium and right ventricle in the thoracic cage.',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Sternum (NCBI Bookshelf NBK538169)',
+    sourceReference: formatRelationshipCitation('sternum'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -197,7 +198,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The ascending aorta transitions continuously into the aortic arch at the level of the sternal angle (T4/T5 intervertebral disc).',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Aorta (NCBI Bookshelf NBK459160)',
+    sourceReference: formatRelationshipCitation('aorta_thorax'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -208,7 +209,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The aortic arch continues posteroinferiorly past the left side of the T4 vertebral body as the thoracic descending aorta.',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Aorta (NCBI Bookshelf NBK459160)',
+    sourceReference: formatRelationshipCitation('aorta_thorax'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -219,7 +220,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The thoracic descending aorta passes through the diaphragmatic aortic hiatus at the T12 vertebral level to become the abdominal aorta.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Aorta (NCBI Bookshelf NBK459160)',
+    sourceReference: formatRelationshipCitation('aorta_thorax'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -230,7 +231,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The aortic arch curves anteroposteriorly immediately anterior and to the left of the lower trachea before its bifurcation.',
-    sourceReference: "Gray's Anatomy: The Anatomical Basis of Clinical Practice (42nd ed.)",
+    sourceReference: formatRelationshipCitation('grays_anatomy'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -245,7 +246,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The trachea bifurcates at the carina into the right principal bronchus, which is wider, shorter, and more vertical as it enters the right lung hilum.',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Trachea (NCBI Bookshelf NBK448208)',
+    sourceReference: formatRelationshipCitation('trachea'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -256,7 +257,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The trachea bifurcates at the carina into the left principal bronchus, traversing inferolaterally beneath the aortic arch to enter the left lung hilum.',
-    sourceReference: 'StatPearls: Anatomy, Thorax, Trachea (NCBI Bookshelf NBK448208)',
+    sourceReference: formatRelationshipCitation('trachea'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -267,7 +268,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'functionally_related',
     category: 'functional',
     explanation: 'The bilateral lungs function as the coordinated respiratory pair responsible for tidal gas exchange and systemic acid-base regulation.',
-    sourceReference: 'StatPearls: Physiology, Respiratory Drive (NCBI Bookshelf NBK519503)',
+    sourceReference: formatRelationshipCitation('respiratory_drive'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -278,7 +279,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'functionally_related',
     category: 'functional',
     explanation: 'Right hemidiaphragmatic contraction flattens the dome, increasing thoracic vertical volume and generating subatmospheric pleural pressure to inflate the right lung.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Diaphragm (NCBI Bookshelf NBK519507)',
+    sourceReference: formatRelationshipCitation('diaphragm'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -289,7 +290,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'functionally_related',
     category: 'functional',
     explanation: 'Left hemidiaphragmatic contraction directly drives negative intrapleural pressure excursion and ventilation of the left lung.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Diaphragm (NCBI Bookshelf NBK519507)',
+    sourceReference: formatRelationshipCitation('diaphragm'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -304,7 +305,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The abdominal esophagus pierces the diaphragmatic hiatus at T10 to join the gastric cardia at the gastroesophageal junction.',
-    sourceReference: 'StatPearls: Anatomy, Gastrointestinal, Esophagus (NCBI Bookshelf NBK470176)',
+    sourceReference: formatRelationshipCitation('esophagus'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -315,7 +316,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The gastric pyloric canal empties through the muscular pyloric sphincter into the superior (first) part of the duodenum.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Stomach (NCBI Bookshelf NBK470176)',
+    sourceReference: formatRelationshipCitation('stomach'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -324,9 +325,9 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     sourceConceptId: 'FMA7197', // liver
     targetConceptId: 'FMA7202', // gallbladder
     type: 'supplies',
-    category: 'circulatory',
-    explanation: 'Hepatocytes continually secrete bile into hepatic ductal tributaries that convey bile via the cystic duct for concentration in the gallbladder.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Gallbladder (NCBI Bookshelf NBK482270)',
+    category: 'functional',
+    explanation: 'Hepatocytes continually synthesize and secrete bile, supplying it through the biliary ductal pathway to the gallbladder for storage and concentration.',
+    sourceReference: formatRelationshipCitation('gallbladder'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -337,7 +338,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The gallbladder empties concentrated bile through the cystic duct and common bile duct into the descending (second) part of the duodenum.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Gallbladder (NCBI Bookshelf NBK482270)',
+    sourceReference: formatRelationshipCitation('gallbladder'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -348,7 +349,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The main pancreatic duct joins the common bile duct at the hepatopancreatic ampulla (ampulla of Vater) to release digestive enzymes into the duodenum.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Pancreas (NCBI Bookshelf NBK459261)',
+    sourceReference: formatRelationshipCitation('pancreas'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -359,7 +360,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The visceral surface of the left hepatic lobe features the gastric impression, which contacts the lesser curvature and anterior wall of the stomach.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Liver (NCBI Bookshelf NBK535439)',
+    sourceReference: formatRelationshipCitation('liver_anatomy'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -370,7 +371,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The superior convex diaphragmatic surface of the liver conforms precisely to the inferior concavity of the right hemidiaphragm.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Liver (NCBI Bookshelf NBK535439)',
+    sourceReference: formatRelationshipCitation('liver_anatomy'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -381,7 +382,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The body and neck of the pancreas form a major portion of the stomach bed across the posterior wall of the omental bursa (lesser sac).',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Pancreas (NCBI Bookshelf NBK459261)',
+    sourceReference: formatRelationshipCitation('pancreas'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -392,7 +393,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The gastrosplenic ligament bridges the greater curvature of the gastric fundus directly to the visceral hilum of the spleen.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Spleen (NCBI Bookshelf NBK482353)',
+    sourceReference: formatRelationshipCitation('spleen'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -403,7 +404,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The tail of the pancreas extends into the splenorenal ligament to make anatomical contact with the visceral hilum of the spleen.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Spleen (NCBI Bookshelf NBK482353)',
+    sourceReference: formatRelationshipCitation('spleen'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -416,9 +417,9 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     sourceConceptId: 'FMA7204', // right kidney
     targetConceptId: 'FMA15900', // urinary bladder
     type: 'drains_into',
-    category: 'circulatory',
-    explanation: 'The right renal pelvis funnels filtered urine through the right ureter into the posteroinferior base of the urinary bladder at the ureteric orifice.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Kidneys (NCBI Bookshelf NBK535456)',
+    category: 'functional',
+    explanation: 'The right renal pelvis funnels filtered urine through the right ureter into the posteroinferior base of the urinary bladder at the ureteric orifice for storage.',
+    sourceReference: formatRelationshipCitation('kidneys'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -427,9 +428,9 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     sourceConceptId: 'FMA7205', // left kidney
     targetConceptId: 'FMA15900', // urinary bladder
     type: 'drains_into',
-    category: 'circulatory',
-    explanation: 'The left renal pelvis empties urine through peristaltic contractions of the left ureter into the trigone of the urinary bladder.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Kidneys (NCBI Bookshelf NBK535456)',
+    category: 'functional',
+    explanation: 'The left renal pelvis empties urine through peristaltic contractions of the left ureter into the trigone of the urinary bladder for storage.',
+    sourceReference: formatRelationshipCitation('kidneys'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -440,7 +441,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The superior pole and anterior upper quadrant of the right kidney form the deep renal impression on the visceral surface of the liver.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Liver (NCBI Bookshelf NBK535439)',
+    sourceReference: formatRelationshipCitation('liver_anatomy'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -451,7 +452,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'located_near',
     category: 'spatial',
     explanation: 'The upper pole and superolateral border of the left kidney contact the posteromedial renal impression of the spleen.',
-    sourceReference: 'StatPearls: Anatomy, Abdomen and Pelvis, Spleen (NCBI Bookshelf NBK482353)',
+    sourceReference: formatRelationshipCitation('spleen'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -462,7 +463,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'functionally_related',
     category: 'functional',
     explanation: 'The paired kidneys maintain homeostatic fluid balance, plasma osmolality, electrolyte concentration, and arterial blood pressure via renin secretion.',
-    sourceReference: 'StatPearls: Physiology, Renal (NCBI Bookshelf NBK535456)',
+    sourceReference: formatRelationshipCitation('renal_physiology'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -477,7 +478,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'part_of',
     category: 'structural',
     explanation: 'The cerebellum is the metencephalic division of the brain located in the posterior cranial fossa, coordinating motor timing and balance.',
-    sourceReference: 'StatPearls: Neuroanatomy, Cerebellum (NCBI Bookshelf NBK538167)',
+    sourceReference: formatRelationshipCitation('cerebellum'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -488,7 +489,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'part_of',
     category: 'structural',
     explanation: 'The brainstem comprises the midbrain, pons, and medulla oblongata, functioning as the vital conduit and autonomic regulatory hub of the brain.',
-    sourceReference: 'StatPearls: Neuroanatomy, Brainstem (NCBI Bookshelf NBK544297)',
+    sourceReference: formatRelationshipCitation('brainstem'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -499,7 +500,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The medulla oblongata of the brainstem transitions continuously into the cervical spinal cord at the inferior margin of the foramen magnum.',
-    sourceReference: 'StatPearls: Neuroanatomy, Spinal Cord (NCBI Bookshelf NBK538167)',
+    sourceReference: formatRelationshipCitation('spinal_cord'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -510,7 +511,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'surrounds',
     category: 'spatial',
     explanation: 'The neurocranium forms a rigid osseous chamber encasing the cerebral hemispheres, cerebellum, and brainstem to provide physical impact protection.',
-    sourceReference: 'StatPearls: Anatomy, Head and Neck, Skull (NCBI Bookshelf NBK538169)',
+    sourceReference: formatRelationshipCitation('skull'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -521,7 +522,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'surrounds',
     category: 'spatial',
     explanation: 'The continuous longitudinal vertebral canal formed by the vertebral arches encloses and protects the spinal cord from C1 to the conus medullaris (L1/L2).',
-    sourceReference: 'StatPearls: Anatomy, Back, Vertebral Canal (NCBI Bookshelf NBK538167)',
+    sourceReference: formatRelationshipCitation('vertebral_canal'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -532,7 +533,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'connected_to',
     category: 'structural',
     explanation: 'The occipital condyles on the skull base articulate with the superior articular facets of the C1 atlas at the synovial atlanto-occipital joints.',
-    sourceReference: 'StatPearls: Anatomy, Head and Neck, Atlantooccipital Joint (NCBI Bookshelf NBK538169)',
+    sourceReference: formatRelationshipCitation('cervical_vertebrae'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -544,10 +545,10 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     id: 'rel_vert_right_femur',
     sourceConceptId: 'FMA13478', // vertebral column
     targetConceptId: 'FMA24474', // right femur
-    type: 'connected_to',
-    category: 'structural',
-    explanation: 'The sacral segment of the vertebral column articulates with the pelvic ilium, transmitting axial torso weight across the right acetabulofemoral hip joint.',
-    sourceReference: 'StatPearls: Anatomy, Back, Sacroiliac Joint (NCBI Bookshelf NBK538167)',
+    type: 'functionally_related',
+    category: 'functional',
+    explanation: 'The vertebral column transmits axial body weight and mechanical loads indirectly to the right femur via the pelvic ring and right acetabulofemoral hip joint during upright posture and locomotion.',
+    sourceReference: formatRelationshipCitation('sacroiliac_joint'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -555,10 +556,10 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     id: 'rel_vert_left_femur',
     sourceConceptId: 'FMA13478', // vertebral column
     targetConceptId: 'FMA24475', // left femur
-    type: 'connected_to',
-    category: 'structural',
-    explanation: 'Axial vertebral weight-bearing loads transfer through the left sacroiliac joint and pelvic acetabulum to articulate with the left femoral head.',
-    sourceReference: 'StatPearls: Anatomy, Back, Sacroiliac Joint (NCBI Bookshelf NBK538167)',
+    type: 'functionally_related',
+    category: 'functional',
+    explanation: 'The vertebral column transmits axial torso weight and ground reaction forces indirectly to the left femur via the pelvic ring and left hip joint during bipedal gait and standing.',
+    sourceReference: formatRelationshipCitation('sacroiliac_joint'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -569,7 +570,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'functionally_related',
     category: 'functional',
     explanation: 'The bilateral femurs function as the primary load-bearing biomechanical struts of the lower extremities during bipedal standing and locomotion.',
-    sourceReference: 'StatPearls: Anatomy, Bony Pelvis and Lower Limb, Femur (NCBI Bookshelf NBK535456)',
+    sourceReference: formatRelationshipCitation('femur'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   },
@@ -580,7 +581,7 @@ export const VERIFIED_RELATIONSHIPS: AnatomicalRelationship[] = [
     type: 'functionally_related',
     category: 'functional',
     explanation: 'The bilateral humeri provide the skeletal levers of the upper arms, articulating at the glenohumeral and elbow joints for upper extremity reach and manipulation.',
-    sourceReference: 'StatPearls: Anatomy, Shoulder and Upper Limb, Humerus (NCBI Bookshelf NBK538169)',
+    sourceReference: formatRelationshipCitation('humerus'),
     sourceKind: 'verified_educational_source',
     confidence: 'verified'
   }
@@ -743,3 +744,42 @@ export function buildRelationshipGraph(
     totalAvailable
   };
 }
+
+export interface QuickHubConcept {
+  id: string;
+  name: string;
+}
+
+export interface QuickHubGroup {
+  id: string;
+  name: string;
+  isBilateralGroup?: boolean;
+  subConcepts?: QuickHubConcept[];
+}
+
+export const RELATIONSHIP_QUICK_HUBS: QuickHubGroup[] = [
+  { id: 'FMA7088', name: 'Heart' },
+  { id: 'FMA3736', name: 'Ascending Aorta' },
+  { id: 'FMA50801', name: 'Brain' },
+  { id: 'FMA7148', name: 'Stomach' },
+  { id: 'FMA7197', name: 'Liver' },
+  {
+    id: 'FMA7204',
+    name: 'Kidneys',
+    isBilateralGroup: true,
+    subConcepts: [
+      { id: 'FMA7204', name: 'Right Kidney' },
+      { id: 'FMA7205', name: 'Left Kidney' }
+    ]
+  },
+  {
+    id: 'FMA7309',
+    name: 'Lungs',
+    isBilateralGroup: true,
+    subConcepts: [
+      { id: 'FMA7309', name: 'Right Lung' },
+      { id: 'FMA7310', name: 'Left Lung' }
+    ]
+  },
+  { id: 'FMA7394', name: 'Trachea' }
+];

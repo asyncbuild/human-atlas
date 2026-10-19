@@ -36,6 +36,8 @@ export interface SceneState {
   rotate: boolean;
   reset: number;
   clipping?: ClippingState;
+  focusConceptId?: string;
+  focusToken?: number;
 }
 export const DEFAULT_VISIBLE:SystemId[] = ['cardiac','sensory','skeletal','muscular','arterial','venous','nervous','respiratory','digestive','urinary','lymphatic','endocrine','reproductive','connective'];
 export const EXPLANATIONS:Record<string,string> = {

@@ -1,4 +1,5 @@
 import type { Concept, Part, SystemId } from './anatomy';
+import { getCitationSource } from './citations.ts';
 
 export interface AnatomicalSource {
   title: string;
@@ -53,18 +54,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Coronary artery disease (CAD) arising from atherosclerotic plaque accumulation in the left anterior descending, circumflex, or right coronary arteries causes myocardial ischemia or acute myocardial infarction (AMI). Valvular stenosis or insufficiency produces characteristic auscultatory heart murmurs. Heart failure reflects ventricular dysfunction leading to systemic congestion or pulmonary edema.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Heart',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK470256/',
-        authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-      },
-      {
-        title: "Gray's Anatomy: The Anatomical Basis of Clinical Practice (42nd ed.)",
-        url: 'https://www.elsevier.com/books/grays-anatomy/standring/978-0-7020-7705-0',
-        authoritativeBody: 'Elsevier Health Sciences'
-      }
-    ],
+    sources: [getCitationSource('heart'), getCitationSource('grays_anatomy')],
     verificationStatus: 'verified'
   },
 
@@ -92,13 +82,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Ischemic and hemorrhagic strokes cause rapid focal neurological deficits corresponding to disrupted cerebral arterial distributions (e.g., middle cerebral artery territory). Traumatic brain injuries (TBI) and intracranial masses produce elevated intracranial pressure (ICP), risking cerebral herniation syndromes through the tentorial notch or foramen magnum.',
-    sources: [
-      {
-        title: 'StatPearls: Neuroanatomy, Brain',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK537247/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('cerebral_cortex')],
     verificationStatus: 'verified'
   },
 
@@ -126,13 +110,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Chronic parenchymal inflammation (viral hepatitis, non-alcoholic steatohepatitis, alcohol use) leads to diffuse hepatic fibrosis and cirrhosis. Cirrhotic distortion of intrahepatic vascular architecture precipitates portal hypertension, splenomegaly, ascites, and esophageal varices. Impaired bilirubin conjugation results in clinical jaundice.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Liver',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK535439/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('liver_anatomy')],
     verificationStatus: 'verified'
   },
 
@@ -162,13 +140,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Gastric and duodenal peptic ulcer disease commonly results from Helicobacter pylori colonization or chronic nonsteroidal anti-inflammatory drug (NSAID) use causing mucosal barrier erosion. Incompetence of the lower esophageal sphincter produces gastroesophageal reflux disease (GERD), predisposing to metaplastic Barrett esophagus.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Stomach',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK499849/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('stomach')],
     verificationStatus: 'verified'
   },
 
@@ -199,13 +171,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'The right main bronchus is wider, shorter (~2.5 cm), and runs more vertically (~25 degrees from midline) than the left, causing foreign body aspiration to preferentially lodge in the right bronchial tree (particularly the superior segment of the right lower lobe). Lobar pneumonia commonly affects discrete segments or entire lobes.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Lung',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK532961/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('lungs')],
     verificationStatus: 'verified'
   },
 
@@ -234,13 +200,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Pleural effusion, pneumothorax, or hemothorax in the left pleural cavity compresses lung tissue, causing compressive atelectasis and mediastinal shift. Chronic obstructive pulmonary disease (COPD) causes irreversible alveolar wall destruction (emphysema) and airway hypersecretion (chronic bronchitis).',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Lung',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK532961/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('lungs')],
     verificationStatus: 'verified'
   },
 
@@ -269,13 +229,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Nephrolithiasis (calcium oxalate, uric acid, or struvite calculi) obstructing the ureteropelvic junction causes acute renal colic radiating from flank to groin. Hydronephrosis develops when urinary outflow is obstructed, predisposing to parenchymal atrophy and secondary pyelonephritis.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Kidneys',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK499818/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('kidneys'), getCitationSource('renal_physiology')],
     verificationStatus: 'verified'
   },
 
@@ -303,13 +257,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'The left renal vein can become compressed between the abdominal aorta and superior mesenteric artery ("nutcracker syndrome"), causing left flank pain, hematuria, and left varicocele in males (due to impaired drainage of the left testicular vein into the left renal vein). Chronic kidney disease (CKD) manifests as progressive loss of glomerular filtration.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Kidneys',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK499818/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('kidneys'), getCitationSource('renal_physiology')],
     verificationStatus: 'verified'
   },
 
@@ -338,13 +286,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Femoral neck fractures in elderly patients frequently disrupt the intra-capsular retinacular arterial branches of the medial circumflex femoral artery, leading to avascular necrosis (AVN) of the femoral head. High-energy diaphyseal fractures cause substantial internal hemorrhage (up to 1–1.5 L of blood loss into the thigh compartment) and carry a risk of fat embolism syndrome.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Bony Pelvis and Lower Limb, Femur',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK532982/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('femur')],
     verificationStatus: 'verified'
   },
 
@@ -372,13 +314,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Osteoarthritis of the hip (coxarthrosis) involves degeneration of the femoral head articular cartilage, joint space narrowing, and subchondral osteophyte formation, often treated with total hip arthroplasty (THA). Distal supracondylar fractures risk injury to the popliteal artery and tibial nerve.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Bony Pelvis and Lower Limb, Femur',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK532982/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('femur')],
     verificationStatus: 'verified'
   },
 
@@ -406,13 +342,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Mid-shaft humeral fractures commonly injure the radial nerve as it traverses the radial (spiral) groove, resulting in characteristic "wrist drop" (loss of wrist and finger extension) and sensory loss over the dorsal first web space. Surgical neck fractures risk axillary nerve injury and posterior circumflex humeral artery disruption.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Shoulder and Upper Limb, Humerus',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK534821/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('humerus')],
     verificationStatus: 'verified'
   },
 
@@ -437,13 +367,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Supracondylar fractures of the distal humerus, most prevalent in pediatric falls onto an outstretched hand, represent orthopedic emergencies due to the high risk of brachial artery entrapment and median nerve injury, which can lead to ischemic Volkmann contracture.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Shoulder and Upper Limb, Humerus',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK534821/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('humerus')],
     verificationStatus: 'verified'
   },
 
@@ -472,13 +396,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Basilar skull fractures involving the temporal or sphenoid bones manifest with clinical hallmarks: periorbital ecchymosis ("raccoon eyes"), retroauricular ecchymosis ("Battle sign"), and CSF rhinorrhea or otorrhea. Craniosynostosis (premature closure of infant sutures) alters skull morphology and may compromise intracranial volume.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Head and Neck, Skull',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK538167/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('skull')],
     verificationStatus: 'verified'
   },
 
@@ -508,13 +426,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Herniation of the nucleus pulposus (most common at L4–L5 and L5–S1) compresses traversing or exiting spinal nerve roots, producing lumbar radiculopathy (sciatica). Degenerative spinal stenosis causes neurogenic claudication during ambulation. Pathological spinal curvatures include scoliosis (lateral deviation) and hyperkyphosis.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Back, Vertebral Column',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK525969/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('vertebral_column')],
     verificationStatus: 'verified'
   },
 
@@ -543,13 +455,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Traumatic spinal cord injury (SCI) above C3–C5 causes diaphragmatic paralysis requiring mechanical ventilation due to phrenic nerve impairment. Complete transection results in permanent loss of sensory and motor function below the lesion level (spinal shock followed by spastic paralysis). Cauda equina compression produces a surgical emergency with saddle anesthesia and sphincter dysfunction.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Spinal Cord',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK544321/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('spinal_cord')],
     verificationStatus: 'verified'
   },
 
@@ -577,13 +483,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Acute upper airway obstruction (foreign body, angioedema, epiglottitis) can necessitate emergency cricothyroidotomy or tracheostomy (usually between 2nd and 3rd tracheal rings). Tracheomalacia involves structural weakness and dynamic expiratory collapse of tracheal cartilages.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Head and Neck, Trachea',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK470390/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('trachea')],
     verificationStatus: 'verified'
   },
 
@@ -614,13 +514,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Phrenic nerve injury causes ipsilateral diaphragmatic paralysis and paradoxical upward movement on inspiration. Congenital diaphragmatic hernias (e.g., Bochdalek hernia through posterolateral pleuroperitoneal defect) allow abdominal viscera to compress developing fetal lungs, causing severe pulmonary hypoplasia.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Thorax, Diaphragm',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK519558/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('diaphragm')],
     verificationStatus: 'verified'
   },
 
@@ -648,13 +542,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Because of its rich vascularity and fragile capsule, blunt abdominal trauma (e.g., motor vehicle collision, sports impact) frequently causes splenic rupture with life-threatening intra-abdominal hemorrhage. Splenectomized individuals face lifetime susceptibility to overwhelming post-splenectomy infection (OPSI) caused by encapsulated bacteria.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Spleen',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK541018/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('spleen')],
     verificationStatus: 'verified'
   },
 
@@ -682,13 +570,7 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Acute pancreatitis, most commonly provoked by gallstone impaction at the ampulla of Vater or alcohol toxicity, causes autodigestion of pancreatic tissue with severe epigastric pain radiating to the back. Pancreatic ductal adenocarcinoma, especially in the pancreatic head, classically causes painless obstructive jaundice.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Pancreas',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK532912/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
-    ],
+    sources: [getCitationSource('pancreas')],
     verificationStatus: 'verified'
   },
 
@@ -716,13 +598,329 @@ export const KNOWLEDGE_BASE: Record<string, AnatomicalKnowledgeEntry> = {
     ],
     clinicalNotes:
       'Cystitis (bacterial infection, frequently caused by uropathogenic Escherichia coli) causes mucosal inflammation with dysuria, urgency, and suprapubic pain. Urinary retention occurs with benign prostatic hyperplasia (BPH) obstructing the bladder neck. Painless gross hematuria in adults is a hallmark of urothelial (transitional cell) bladder carcinoma.',
-    sources: [
-      {
-        title: 'StatPearls: Anatomy, Abdomen and Pelvis, Urinary Bladder',
-        url: 'https://www.ncbi.nlm.nih.gov/books/NBK534241/',
-        authoritativeBody: 'NCBI Bookshelf'
-      }
+    sources: [getCitationSource('urinary_bladder')],
+    verificationStatus: 'verified'
+  },
+
+  // 21. AORTA (FMA3734)
+  FMA3734: {
+    conceptId: 'FMA3734',
+    canonicalName: 'Aorta',
+    anatomicalSystem: 'arterial',
+    overview:
+      'The aorta is the largest systemic artery in the human body, originating from the left ventricle of the heart and distributing oxygenated blood under high hydrostatic pressure throughout the systemic circulation via its thoracic and abdominal segments.',
+    location:
+      'Extends from the aortic root at the base of the left ventricle in the middle mediastinum, arches superiorly and posteriorly over the pulmonary vessels, descends through the posterior mediastinum, passes through the aortic hiatus of the diaphragm (T12), and continues in the retroperitoneum down to the L4 vertebral level, where it bifurcates into the common iliac arteries.',
+    anatomicalFeatures: [
+      'Ascending aorta: Originates at the aortic valve orifice with the aortic root and sinuses of Valsalva, giving off the right and left coronary arteries.',
+      'Aortic arch: Traverses the superior mediastinum from right-to-left and anterior-to-posterior, giving rise to three major systemic trunks: the brachiocephalic artery, left common carotid artery, and left subclavian artery.',
+      'Thoracic descending aorta: Courses through the posterior mediastinum anterior and left of the vertebral column, giving off posterior intercostal, bronchial, esophageal, and superior phrenic arteries.',
+      'Abdominal aorta: Retroperitoneal continuation distal to the T12 diaphragmatic hiatus; branches into visceral trunks (celiac trunk, superior mesenteric, inferior mesenteric) and paired renal, gonadal, and lumbar arteries before bifurcating at L4.',
+      'Arterial wall architecture: Composed of three distinct tunics (intima, media, adventitia); the thick tunica media is rich in concentric elastic lamellae providing the Windkessel effect to dampen pulsatile pressure fluctuations.'
     ],
+    function:
+      'Transports the entire stroke volume of oxygenated blood pumped by the left ventricle to all systemic organs, vascular beds, and extremities. Its high elastic compliance accommodates systolic ejection and maintains forward diastolic perfusion pressure.',
+    relatedStructures: [
+      { conceptId: 'FMA7088', name: 'Heart', relationship: 'Arises directly from the aortic valve orifice of the left ventricle' },
+      { conceptId: 'FMA8612', name: 'Pulmonary trunk', relationship: 'Ascending aorta ascends adjacent to and slightly to the right of the pulmonary trunk' },
+      { conceptId: 'FMA7131', name: 'Esophagus', relationship: 'Descending aorta descends posterior to and then to the left of the esophagus' },
+      { conceptId: 'FMA13295', name: 'Diaphragm', relationship: 'Traverses the aortic hiatus anterior to the T12 vertebral body' }
+    ],
+    clinicalNotes:
+      'Aortic dissection involves a tear in the tunica intima allowing blood to surge into the tunica media, creating a false lumen (classified by Stanford criteria into Type A involving the ascending aorta and Type B confined to the descending aorta). Abdominal aortic aneurysm (AAA), commonly linked to atherosclerosis and connective tissue degeneration, poses risk of catastrophic rupture when vessel diameter exceeds critical thresholds.',
+    sources: [getCitationSource('aorta_thorax'), getCitationSource('grays_anatomy')],
+    verificationStatus: 'verified'
+  },
+
+  // 22. ESOPHAGUS (FMA7131)
+  FMA7131: {
+    conceptId: 'FMA7131',
+    canonicalName: 'Esophagus',
+    anatomicalSystem: 'digestive',
+    overview:
+      'The esophagus is a muscular conducting tube approximately 25 cm in length connecting the pharynx to the stomach, specialized for the coordinated, peristaltic transit of ingested food boluses and liquids.',
+    location:
+      'Originates in the neck at the inferior border of the cricoid cartilage (C6 level), descends through the superior and posterior mediastinum posterior to the trachea and pericardium, traverses the diaphragm at the esophageal hiatus (T10), and terminates at the gastric cardia (T11).',
+    anatomicalFeatures: [
+      'Cervical esophagus (C6–T1): Lies posterior to the trachea and anterior to the prevertebral fascia, accompanied laterally by carotid sheaths and recurrent laryngeal nerves.',
+      'Thoracic esophagus (T1–T10): Longest segment, passing through the superior and posterior mediastinum; crossed anteriorly by the left main bronchus and aortic arch.',
+      'Abdominal esophagus (T10–T11): Short 1.5–2 cm intraperitoneal segment terminating at the gastroesophageal junction (Z-line).',
+      'Muscular transition: Proximal upper third is composed entirely of striated skeletal muscle, middle third is a mixture of skeletal and smooth muscle, and distal lower third is exclusively involuntary smooth muscle.',
+      'Physiological constrictions: Three anatomical narrowings: cervical (pharyngoesophageal junction / upper esophageal sphincter, C6), thoracic/bronchoaortic (crossing of aortic arch and left main bronchus, T4/T5), and diaphragmatic (traversing the esophageal hiatus, T10).'
+    ],
+    function:
+      'Transports ingested material from the hypopharynx to the stomach via coordinated primary and secondary peristaltic contraction waves regulated by the vagus nerve and enteric myenteric (Auerbach) plexus, while preventing gastric retrograde acid reflux via the lower esophageal sphincter (LES).',
+    relatedStructures: [
+      { conceptId: 'FMA7394', name: 'Trachea', relationship: 'Courses immediately anterior to the upper and middle thoracic esophagus' },
+      { conceptId: 'FMA7088', name: 'Heart', relationship: 'Left atrium lies directly anterior to the mid-thoracic esophagus' },
+      { conceptId: 'FMA7148', name: 'Stomach', relationship: 'Direct continuous entry into the gastric cardia at the T11 level' },
+      { conceptId: 'FMA13295', name: 'Diaphragm', relationship: 'Traverses the esophageal hiatus formed by the right crus at T10' }
+    ],
+    clinicalNotes:
+      'Gastroesophageal reflux disease (GERD) results from transient or persistent incompetence of the lower esophageal sphincter, leading to acid mucosal irritation (heartburn) and potentially Barrett esophagus (intestinal metaplasia of stratified squamous mucosa to specialized columnar epithelium), a risk factor for esophageal adenocarcinoma. Esophageal varices develop in the distal esophageal venous submucosa in portal hypertension due to porto-systemic anastomoses between left gastric and azygos veins.',
+    sources: [getCitationSource('esophagus')],
+    verificationStatus: 'verified'
+  },
+
+  // 23. GALLBLADDER (FMA7202)
+  FMA7202: {
+    conceptId: 'FMA7202',
+    canonicalName: 'Gallbladder',
+    anatomicalSystem: 'digestive',
+    overview:
+      'The gallbladder is a pear-shaped intraperitoneal sac situated on the visceral surface of the liver, functioning as a storage and concentration reservoir for hepatic bile between meals.',
+    location:
+      'Right upper quadrant (RUQ) of the abdomen, resting in the shallow gallbladder fossa on the inferior visceral surface of the liver between the right anatomical lobe and the quadrate lobe (segments IV and V).',
+    anatomicalFeatures: [
+      'Fundus: Rounded anterior projection extending beyond the inferior liver margin, classically projecting at the tip of the right ninth costal cartilage in the midclavicular line.',
+      'Body: Central portion extending posterosuperiorly, resting against the duodenum and transverse colon.',
+      'Neck: Narrowed, tapered portion that curves toward the porta hepatis; mucosal folds form the spiral valve of Heister.',
+      'Cystic duct: Carries bile bidirectionally between the gallbladder neck and the common hepatic duct to form the common bile duct.',
+      'Mucosal concentration: Highly folded rugae lined by simple columnar epithelium with apical microvilli that absorb water and electrolytes, concentrating bile up to five- to ten-fold.'
+    ],
+    function:
+      'Stores 30 to 50 mL of hepatic bile and actively concentrates it by absorbing sodium, chloride, and water. Upon entry of dietary lipids and amino acids into the duodenum, duodenal I cells secrete cholecystokinin (CCK), which stimulates gallbladder smooth muscle contraction and relaxes the sphincter of Oddi, discharging concentrated bile into the duodenum for fat emulsification.',
+    relatedStructures: [
+      { conceptId: 'FMA7197', name: 'Liver', relationship: 'Rests directly in the gallbladder fossa on the visceral surface of the liver' },
+      { conceptId: 'FMA7206', name: 'Duodenum', relationship: 'Cystic duct joins common hepatic duct to discharge bile into the duodenum via the common bile duct' }
+    ],
+    clinicalNotes:
+      'Cholelithiasis (gallstones) forms when bile composition becomes supersaturated with cholesterol or bilirubin pigments. Impaction of a stone within the cystic duct causes biliary colic and acute cholecystitis (characterized by Murphy sign: inspiratory arrest during deep palpation of the right upper quadrant). Gallstone migration into the common bile duct (choledocholithiasis) can cause obstructive jaundice or acute gallstone pancreatitis.',
+    sources: [getCitationSource('gallbladder')],
+    verificationStatus: 'verified'
+  },
+
+  // 24. DUODENUM (FMA7206)
+  FMA7206: {
+    conceptId: 'FMA7206',
+    canonicalName: 'Duodenum',
+    anatomicalSystem: 'digestive',
+    overview:
+      'The duodenum is the initial, shortest (approximately 25 cm), and widest segment of the small intestine, forming a C-shaped loop around the head of the pancreas where gastric chyme mixes with biliary and pancreatic digestive secretions.',
+    location:
+      'Epigastric and umbilical regions of the abdomen, spanning vertebral levels L1 through L3; predominantly retroperitoneal except for the mobile initial duodenal bulb.',
+    anatomicalFeatures: [
+      'Superior part (first part / D1, ~5 cm): Extends from the gastric pylorus to the neck of the gallbladder at L1; includes the intraperitoneal duodenal bulb.',
+      'Descending part (second part / D2, ~7.5 cm): Descends retroperitoneally along the right side of L1–L3; contains the major duodenal papilla (of Vater) where the common bile duct and main pancreatic duct empty.',
+      'Horizontal part (third part / D3, ~10 cm): Crosses retroperitoneally from right to left across the anterior aspect of the IVC and abdominal aorta at the level of L3, passed anteriorly by the superior mesenteric vessels.',
+      'Ascending part (fourth part / D4, ~2.5 cm): Ascends to the level of L2 along the left side of the aorta, terminating at the duodenojejunal flexure supported by the suspensory ligament of Treitz.',
+      'Brunner glands: Submucosal branched glands located in the duodenal wall that secrete alkaline mucus rich in bicarbonate to protect against acidic gastric chyme.'
+    ],
+    function:
+      'Receives acidic chyme from the stomach through the pyloric sphincter; neutralizes stomach acid via pancreatic bicarbonate and Brunner gland secretions; mixes chyme with bile and pancreatic enzymes (lipase, amylase, trypsinogen) to initiate primary chemical digestion and early absorption of iron, calcium, and nutrients.',
+    relatedStructures: [
+      { conceptId: 'FMA7148', name: 'Stomach', relationship: 'Continuous proximally with the pyloric canal of the stomach' },
+      { conceptId: 'FMA7198', name: 'Pancreas', relationship: 'C-shaped loop cradles and adheres to the head of the pancreas' },
+      { conceptId: 'FMA7202', name: 'Gallbladder', relationship: 'Receives concentrated bile from the biliary tract via the major duodenal papilla' },
+      { conceptId: 'FMA7197', name: 'Liver', relationship: 'Connected to the liver porta hepatis via the hepatoduodenal ligament containing the portal triad' }
+    ],
+    clinicalNotes:
+      'Duodenal peptic ulcers occur most frequently in the first part (duodenal bulb) due to Helicobacter pylori infection or nonsteroidal anti-inflammatory drug (NSAID) use; anterior ulcer perforation causes peritonitis and free air under the diaphragm, while posterior ulcer erosion into the gastroduodenal artery can produce massive upper gastrointestinal hemorrhage. Superior mesenteric artery (SMA) syndrome results from compression of the third part of the duodenum between the abdominal aorta and overlying SMA.',
+    sources: [getCitationSource('duodenum'), getCitationSource('small_intestine')],
+    verificationStatus: 'verified'
+  },
+
+  // 25. SUPERIOR VENA CAVA (FMA4720)
+  FMA4720: {
+    conceptId: 'FMA4720',
+    canonicalName: 'Superior vena cava',
+    anatomicalSystem: 'venous',
+    overview:
+      'The superior vena cava (SVC) is a large, valveless venous conduit approximately 7 cm long and 2 cm in diameter that collects deoxygenated blood from the upper half of the body (head, neck, upper extremities, and thoracic wall) and delivers it into the right atrium of the heart.',
+    location:
+      'Superior and middle mediastinum in the right thoracic cavity, extending from the level of the lower border of the first right costal cartilage down to the right atrium at the level of the third right costal cartilage.',
+    anatomicalFeatures: [
+      'Formation: Formed behind the lower border of the right first costal cartilage by the confluence of the right and left brachiocephalic (innominate) veins.',
+      'Azygos arch tributary: The azygos vein arches anteriorly over the root of the right lung to enter the posterior wall of the SVC just before it enters the pericardium.',
+      'Pericardial reflection: The lower half of the SVC is enclosed within the fibrous pericardial sac and lined by serous pericardium.',
+      'Valveless design: Lacks internal valves, allowing central venous pressure waveforms from the right atrium to be transmitted retrogradely to the internal jugular veins.'
+    ],
+    function:
+      'Channels high-flow systemic venous return (~2.5 liters/min at rest) from cranial, cervical, upper limb, and thoracic parietal circuits directly into the right atrium, maintaining cardiac preload for the right ventricle.',
+    relatedStructures: [
+      { conceptId: 'FMA7088', name: 'Heart', relationship: 'Terminates in the posterosuperior aspect of the right atrium' },
+      { conceptId: 'FMA3736', name: 'Ascending aorta', relationship: 'Ascending aorta lies immediately anteromedial to the SVC' },
+      { conceptId: 'FMA7309', name: 'Right lung', relationship: 'Abuts the medial mediastinal surface of the right lung' },
+      { conceptId: 'FMA7394', name: 'Trachea', relationship: 'Trachea lies posteromedial to the upper portion of the SVC' }
+    ],
+    clinicalNotes:
+      'Superior vena cava syndrome occurs when extrinsic compression (most commonly by mediastinal neoplasms such as non-small cell lung cancer, small cell lung cancer, or lymphoma) or thrombosis impairs venous return, resulting in facial and upper extremity edema, cyanosis, and dilated superficial collateral veins over the anterior chest wall. Central venous catheterization via the internal jugular or subclavian vein targets the cavoatrial junction for central venous pressure monitoring or vasoactive infusions.',
+    sources: [getCitationSource('svc')],
+    verificationStatus: 'verified'
+  },
+
+  // 26. INFERIOR VENA CAVA (FMA10951)
+  FMA10951: {
+    conceptId: 'FMA10951',
+    canonicalName: 'Inferior vena cava',
+    anatomicalSystem: 'venous',
+    overview:
+      'The inferior vena cava (IVC) is the largest vein in the human body, conducting deoxygenated venous blood from all tissues and organs below the diaphragm back to the right atrium of the heart.',
+    location:
+      'Retroperitoneal space along the posterior abdominal wall, anterior to the lumbar spine and immediately to the right of the abdominal aorta, ascending through the caval opening of the diaphragmatic central tendon at T8 to enter the right atrium.',
+    anatomicalFeatures: [
+      'Formation: Formed anterior to the L5 vertebral body by the confluence of the bilateral common iliac veins, posterior and slightly right of the aortic bifurcation.',
+      'Abdominal course: Ascends vertically in the retroperitoneum along the right psoas major and right sympathetic trunk, grooving the posterior visceral surface of the liver in the bare area.',
+      'Major tributaries: Receives lumbar veins, right gonadal vein, bilateral renal veins (with the longer left renal vein crossing anterior to the aorta), right suprarenal vein, inferior phrenic veins, and three large hepatic veins draining the liver.',
+      'Caval opening: Passes through the central tendon of the diaphragm at the level of the T8 vertebra; contraction of the diaphragm during inspiration dilates the opening, facilitating venous return.'
+    ],
+    function:
+      'Collects and channels venous return from the lower extremities, pelvic viscera, abdominal wall, and abdominal organs (including the hepatic venous outflow containing filtered portal blood) to the right atrium under low hydrostatic pressure.',
+    relatedStructures: [
+      { conceptId: 'FMA3734', name: 'Aorta', relationship: 'Runs parallel and immediately to the right of the abdominal aorta' },
+      { conceptId: 'FMA7088', name: 'Heart', relationship: 'Empties into the posteroinferior aspect of the right atrium' },
+      { conceptId: 'FMA7197', name: 'Liver', relationship: 'Courses through a deep groove on the posterior surface of the liver, receiving the hepatic veins' },
+      { conceptId: 'FMA13295', name: 'Diaphragm', relationship: 'Traverses the caval opening in the central tendon of the diaphragm at T8' }
+    ],
+    clinicalNotes:
+      'Deep vein thrombosis (DVT) originating in the deep veins of the lower extremity can embolize through the IVC to occlude the pulmonary arterial tree (pulmonary embolism). In patients with contraindications to anticoagulation, an IVC filter can be deployed percutaneously into the infrarenal IVC to trap ascending thrombi. IVC compression by a gravid uterus during the third trimester of pregnancy can cause supine hypotensive syndrome.',
+    sources: [getCitationSource('ivc')],
+    verificationStatus: 'verified'
+  },
+
+  // 27. BRAINSTEM (FMA79876)
+  FMA79876: {
+    conceptId: 'FMA79876',
+    canonicalName: 'Brainstem',
+    anatomicalSystem: 'nervous',
+    overview:
+      'The brainstem is the stalk-like caudal component of the brain connecting the cerebral hemispheres and diencephalon superiorly to the spinal cord inferiorly, consisting of the midbrain, pons, and medulla oblongata.',
+    location:
+      'Posterior cranial fossa, resting on the clivus of the sphenoid and occipital bones anterior to the cerebellum, extending from the level of the tentorial notch down to the foramen magnum where it becomes continuous with the cervical spinal cord.',
+    anatomicalFeatures: [
+      'Midbrain (mesencephalon): Rostral segment containing the cerebral peduncles (crura cerebri transmitting descending motor tracts), substantia nigra, red nuclei, cerebral aqueduct, and tectal plate (superior and inferior colliculi).',
+      'Pons: Intermediate bulbous segment characterized by prominent transverse pontocerebellar fibers, middle cerebellar peduncles, and the pontine tegmentum containing cranial nerve nuclei V, VI, VII, and VIII.',
+      'Medulla oblongata: Caudal segment featuring ventral pyramids transmitting corticospinal fibers (with their pyramidal decussation), lateral olivary eminences (inferior olivary nucleus), and nuclei of cranial nerves IX, X, XI, and XII.',
+      'Reticular formation: Diffuse polysynaptic network extending throughout the brainstem core, incorporating the ascending reticular activating system (ARAS) and cardiorespiratory regulatory centers.',
+      'Ventricular system: Traversed by the narrow cerebral aqueduct (connecting third and fourth ventricles) and forming the diamond-shaped floor (rhomboid fossa) of the fourth ventricle.'
+    ],
+    function:
+      'Controls vital autonomic vegetative homeostatic functions including respiratory rhythm generation, cardiovascular hemodynamic regulation, and vasomotor tone; conducts all ascending sensory and descending motor axonal pathways between the cerebrum, cerebellum, and periphery; contains nuclei for ten pairs of cranial nerves (CN III through XII).',
+    relatedStructures: [
+      { conceptId: 'FMA50801', name: 'Brain', relationship: 'Caudal component of the brain, continuous superiorly with the diencephalon' },
+      { conceptId: 'FMA67944', name: 'Cerebellum', relationship: 'Directly connected to the cerebellum via superior, middle, and inferior cerebellar peduncles' },
+      { conceptId: 'FMA7647', name: 'Spinal cord', relationship: 'Continuous inferiorly with the spinal cord at the foramen magnum' },
+      { conceptId: 'FMA46565', name: 'Skull', relationship: 'Rests upon the bony clivus within the posterior cranial fossa' }
+    ],
+    clinicalNotes:
+      'Brainstem strokes (e.g., Wallenberg lateral medullary syndrome caused by posterior inferior cerebellar artery [PICA] occlusion) cause crossed neurological deficits (ipsilateral cranial nerve and Horner syndrome with contralateral body pain/temperature sensory loss). Herniation syndromes (e.g., transtentorial uncal or tonsillar herniation through the foramen magnum) compress brainstem cardiorespiratory centers, causing coma, Cheyne-Stokes respirations, pupillary abnormalities, and fatal respiratory arrest.',
+    sources: [getCitationSource('brainstem'), getCitationSource('cerebral_cortex')],
+    verificationStatus: 'verified'
+  },
+
+  // 28. CEREBELLUM (FMA67944)
+  FMA67944: {
+    conceptId: 'FMA67944',
+    canonicalName: 'Cerebellum',
+    anatomicalSystem: 'nervous',
+    overview:
+      'The cerebellum ("little brain") is a major structure of the hindbrain located in the posterior cranial fossa, dedicated to motor coordination, precise timing, motor learning, postural balance, and vestibulo-ocular reflexes.',
+    location:
+      'Posterior cranial fossa, positioned dorsal to the pons and medulla oblongata and inferior to the tentorium cerebelli (a dural fold that separates it from the occipital lobes of the cerebral hemispheres).',
+    anatomicalFeatures: [
+      'Hemispheres and Vermis: Composed of two lateral cerebellar hemispheres united along the midline by the narrow, worm-like vermis.',
+      'Cortex and Folia: Highly folded cortical surface composed of tightly packed parallel transverse gyri (folia) organized into a three-layered cortex (molecular layer, Purkinje cell layer, and granular layer).',
+      'Deep cerebellar nuclei: Four bilateral pairs of subcortical nuclei embedded within the central white matter: fastigial, globose, emboliform, and dentate nuclei.',
+      'Cerebellar peduncles: Three bilateral bundles of white matter tracts connecting the cerebellum to the brainstem: superior peduncle (main output to thalamus and midbrain), middle peduncle (massive mossy fiber input from pontine nuclei), and inferior peduncle (vestibular and olivary climbing fiber inputs).',
+      'Arbor vitae: Characteristic tree-like branching pattern of cerebellar white matter visible in sagittal cross-sections.'
+    ],
+    function:
+      'Acts as a neural comparator comparing intended motor commands from the motor cortex with actual peripheral somatosensory and vestibular feedback, computing error corrections to smooth out voluntary movements, maintain equilibrium, regulate muscle tone, and consolidate motor skills (such as typing or riding a bicycle).',
+    relatedStructures: [
+      { conceptId: 'FMA79876', name: 'Brainstem', relationship: 'Connected to the midbrain, pons, and medulla via the three cerebellar peduncles' },
+      { conceptId: 'FMA50801', name: 'Brain', relationship: 'Separated from the cerebral occipital lobes by the tentorium cerebelli' },
+      { conceptId: 'FMA46565', name: 'Skull', relationship: 'Housed within the infratentorial compartment of the posterior cranial fossa' }
+    ],
+    clinicalNotes:
+      'Cerebellar lesions (from stroke, multiple sclerosis, or chronic ethanol toxicity damaging the anterior cerebellar vermis) do not cause motor paralysis, but produce ipsilateral ataxia, dysmetria (past-pointing), dysdiadochokinesia (impaired rapid alternating movements), intention tremor, scanning speech, and nystagmus.',
+    sources: [getCitationSource('cerebellum')],
+    verificationStatus: 'verified'
+  },
+
+  // 29. PULMONARY TRUNK (FMA8612)
+  FMA8612: {
+    conceptId: 'FMA8612',
+    canonicalName: 'Pulmonary trunk',
+    anatomicalSystem: 'arterial',
+    overview:
+      'The pulmonary trunk (pulmonary artery trunk) is the thick, short systemic arterial vessel (~5 cm long and 3 cm wide) that carries deoxygenated blood from the right ventricle of the heart to the lungs for oxygenation and carbon dioxide elimination.',
+    location:
+      'Middle mediastinum, emerging from the conus arteriosus (infundibulum) of the right ventricle anterior to the ascending aorta, ascending posterolaterally to the left of the aorta beneath the aortic arch, where it bifurcates at the level of the T5 vertebra into the right and left pulmonary arteries.',
+    anatomicalFeatures: [
+      'Pulmonary orifice and valve: Guarded by the pulmonary semilunar valve comprising three fibrous cusps (anterior, right, and left) that prevent diastolic regurgitation into the right ventricle.',
+      'Pericardial sleeve: Contained entirely within the fibrous pericardial sac enclosed in a common serous sheath alongside the ascending aorta.',
+      'Bifurcation: Divides at the concavity of the aortic arch into the right pulmonary artery (longer, passing posterior to the ascending aorta and SVC to enter the right lung root) and left pulmonary artery (shorter, passing anterior to the descending aorta to enter the left lung root).',
+      'Ligamentum arteriosum: Fibrous cord connecting the superior surface of the bifurcation to the concavity of the aortic arch, representing the obliterated ductus arteriosus.'
+    ],
+    function:
+      'Transports the entire deoxygenated cardiac output from the right ventricle into the low-resistance pulmonary vascular bed, initiating pulmonary circulation for alveolar respiratory gas exchange.',
+    relatedStructures: [
+      { conceptId: 'FMA7088', name: 'Heart', relationship: 'Originates directly from the conus arteriosus of the right ventricle' },
+      { conceptId: 'FMA3734', name: 'Aorta', relationship: 'Ascends anterior and left of the ascending aorta, connected to arch by ligamentum arteriosum' },
+      { conceptId: 'FMA7309', name: 'Right lung', relationship: 'Right branch delivers deoxygenated blood to the right lung root' },
+      { conceptId: 'FMA7310', name: 'Left lung', relationship: 'Left branch delivers deoxygenated blood to the left lung root' }
+    ],
+    clinicalNotes:
+      'Pulmonary embolism (PE) occurs when a thrombus (commonly originating from lower extremity deep veins) dislodges and occludes the pulmonary trunk or its branches. A massive "saddle embolus" straddling the bifurcation of the pulmonary trunk can cause acute right ventricular strain, cardiogenic shock, and electromechanical dissociation. Pulmonary arterial hypertension (PAH) leads to pathological remodeling and right heart failure (cor pulmonale).',
+    sources: [getCitationSource('pulmonary_arteries'), getCitationSource('grays_anatomy')],
+    verificationStatus: 'verified'
+  },
+
+  // 30. STERNUM (FMA7485)
+  FMA7485: {
+    conceptId: 'FMA7485',
+    canonicalName: 'Sternum',
+    anatomicalSystem: 'skeletal',
+    overview:
+      'The sternum (breastbone) is a flat, elongated osseous bone situated in the anterior midline of the thoracic wall, forming the anterior anchor of the thoracic cage and protecting vital mediastinal viscera including the heart and great vessels.',
+    location:
+      'Anterior thoracic midline, extending vertically from the level of the T2/T3 intervertebral disc down to the T9/T10 vertebral level.',
+    anatomicalFeatures: [
+      'Manubrium: Broad, quadrangular superior segment; features a palpable superior jugular (suprasternal) notch, bilateral clavicular notches (articulating with the clavicles at sternoclavicular joints), and facet notches for the first costal cartilages.',
+      'Sternal angle (angle of Louis): Prominent transverse ridge marking the fibrocartilaginous manubriosternal joint at the level of the T4/T5 intervertebral disc; articulates with the second costal cartilage and serves as a major anatomical landmark.',
+      'Body (mesosternum): Elongated, flat central segment possessing lateral costal articular facets for costal cartilages 3 through 7.',
+      'Xiphoid process: Small, cartilaginous or ossified inferior terminal projection at the T9/T10 level, providing attachment for the rectus abdominis muscle, transversus abdominis aponeurosis, and linea alba.',
+      'Hematopoietic red bone marrow: Retains active hematopoietic trabecular red marrow throughout adulthood.'
+    ],
+    function:
+      'Provides anterior structural stability and protection for the heart, ascending aorta, pulmonary trunk, and lungs; serves as an anterior rigid pivot for costal cartilage articulation during respiratory pump-handle thoracic expansion; serves as an attachment site for major muscles (pectoralis major, sternocleidomastoid, rectus abdominis).',
+    relatedStructures: [
+      { conceptId: 'FMA7088', name: 'Heart', relationship: 'Directly overlies the anterior pericardium and ventricles' },
+      { conceptId: 'FMA7574', name: 'Ribs', relationship: 'Articulates with true ribs 1 through 7 via their respective costal cartilages' },
+      { conceptId: 'FMA13295', name: 'Diaphragm', relationship: 'Provides sternal origin attachment for anterior diaphragmatic fibers via the xiphoid process' }
+    ],
+    clinicalNotes:
+      'Median sternotomy is the standard vertical surgical incision through the sternum used to gain access to the heart and mediastinum for open-heart operations (such as coronary artery bypass grafting or valve replacement). Sternal fracture typically results from high-energy blunt anterior chest trauma (e.g., motor vehicle dashboard or steering wheel impact) and demands clinical evaluation for underlying myocardial contusion or aortic injury.',
+    sources: [getCitationSource('sternum')],
+    verificationStatus: 'verified'
+  },
+
+  // 31. RIBS (FMA7574)
+  FMA7574: {
+    conceptId: 'FMA7574',
+    canonicalName: 'Ribs',
+    anatomicalSystem: 'skeletal',
+    overview:
+      'The ribs are 12 pairs of curved, flat, highly elastic bones that form the lateral and posterior skeletal framework of the thoracic cage, shielding the cardiopulmonary organs and facilitating respiratory ventilation.',
+    location:
+      'Bilateral thoracic wall, extending circumferentially from their posterior articulations with the 12 thoracic vertebrae (T1–T12) around to the anterior chest wall.',
+    anatomicalFeatures: [
+      'True ribs (vertebrosternal, ribs 1–7): Articulate directly with the sternum via their own individual costal cartilages.',
+      'False ribs (vertebrochondral, ribs 8–10): Their costal cartilages fuse with the cartilage of the rib immediately above, forming the anterior costal margin.',
+      'Floating ribs (vertebral, ribs 11–12): Possess free anterior cartilaginous tips that do not connect to the sternum or costal margin, ending in the posterior abdominal wall musculature.',
+      'Typical rib structure (ribs 3–9): Consists of a head (possessing two articular demifacets for adjacent vertebral bodies and intervertebral disc), neck, tubercle (articulating with the vertebral transverse process), angle (point of sharp anterior curvature), shaft, and costal groove on the inferior internal border protecting the intercostal neurovascular bundle (vein, artery, nerve: "VAN").'
+    ],
+    function:
+      'Encloses and protects thoracic organs (heart, lungs, great vessels) and upper abdominal viscera (liver, spleen, stomach, kidneys); provides osseous attachments for intercostal and pectoral muscles; enables bucket-handle (transverse) and pump-handle (anterior-posterior) volume expansion of the thoracic cavity during breathing.',
+    relatedStructures: [
+      { conceptId: 'FMA13478', name: 'Vertebral column', relationship: 'Articulates posteriorly with thoracic vertebrae at costovertebral and costotransverse joints' },
+      { conceptId: 'FMA7485', name: 'Sternum', relationship: 'Ribs 1 through 7 connect anteriorly to the sternum via costal cartilages' },
+      { conceptId: 'FMA7309', name: 'Right lung', relationship: 'Surrounds and protects the right lung and pleura' },
+      { conceptId: 'FMA7310', name: 'Left lung', relationship: 'Surrounds and protects the left lung and pleura' }
+    ],
+    clinicalNotes:
+      'Rib fractures are the most frequent chest injuries in blunt trauma; fractures of ribs 4 through 9 are most common, while lower rib fractures (10–12) raise concern for traumatic laceration of the spleen (left) or liver (right). Flail chest occurs when three or more adjacent ribs are fractured in two or more places, creating an unstable paradoxical segment that impairs ventilation. Thoracentesis and chest tube insertion are performed along the superior border of a rib to avoid the neurovascular bundle in the subcostal groove.',
+    sources: [getCitationSource('ribs')],
     verificationStatus: 'verified'
   }
 };
@@ -734,6 +932,8 @@ KNOWLEDGE_BASE['FMA9611'] = {
   canonicalName: 'Femur (Bilateral)',
   overview:
     'The femurs (thigh bones) are the longest, strongest, and heaviest tubular long bones in the human skeleton. Each femur articulates proximally with the pelvic acetabulum and distally with the tibia and patella, bearing the entirety of upper body weight during bipedal standing and locomotion.',
+  location:
+    'Bilateral lower extremities, extending within each thigh between the pelvic acetabulum (hip joint) proximally and the knee joint (articulating with the patella and tibia) distally.',
   relatedStructures: [
     { conceptId: 'FMA24474', name: 'Right femur', relationship: 'Right lateral member of bilateral pair' },
     { conceptId: 'FMA24475', name: 'Left femur', relationship: 'Left lateral member of bilateral pair' },
@@ -747,6 +947,8 @@ KNOWLEDGE_BASE['FMA13303'] = {
   canonicalName: 'Humerus (Bilateral)',
   overview:
     'The humeri are the principal long bones of the upper limbs, providing the skeletal framework of the arms. Each humerus articulates proximally with the glenoid cavity of the scapula and distally with the radius and ulna at the elbow joint.',
+  location:
+    'Bilateral upper extremities, extending within each arm between the shoulder (glenohumeral) joint proximally and the elbow (cubital) joint distally.',
   relatedStructures: [
     { conceptId: 'FMA23130', name: 'Right humerus', relationship: 'Right member of bilateral pair' },
     { conceptId: 'FMA23131', name: 'Left humerus', relationship: 'Left member of bilateral pair' }
@@ -759,11 +961,139 @@ KNOWLEDGE_BASE['FMA7203'] = {
   canonicalName: 'Kidneys (Bilateral)',
   overview:
     'The kidneys are paired retroperitoneal bean-shaped excretory organs located on either side of the vertebral column (T12–L3). They filter blood to excrete metabolic wastes, regulate fluid and electrolyte balances, and maintain blood pressure via renin secretion.',
+  location:
+    'Retroperitoneal space along the posterior abdominal wall on either side of the vertebral column (T12–L3), flanking the psoas major muscles. The right kidney lies slightly lower and relates anteriorly to the liver, duodenum, and ascending colon; the left kidney relates anteriorly to the stomach, spleen, pancreas tail, and descending colon.',
   relatedStructures: [
     { conceptId: 'FMA7204', name: 'Right kidney', relationship: 'Right retroperitoneal kidney' },
     { conceptId: 'FMA7205', name: 'Left kidney', relationship: 'Left retroperitoneal kidney' },
     { conceptId: 'FMA15900', name: 'Urinary bladder', relationship: 'Ureters convey urine from kidneys to bladder' }
   ]
+};
+
+// Aliases for Aortic Segments & Rib Cage:
+KNOWLEDGE_BASE['FMA3736'] = {
+  ...KNOWLEDGE_BASE['FMA3734'],
+  conceptId: 'FMA3736',
+  canonicalName: 'Ascending aorta',
+  overview:
+    'The ascending aorta is the initial intrapericardial segment of the aorta, beginning at the aortic root of the left ventricle and continuing to the origin of the brachiocephalic trunk where it becomes the aortic arch.',
+  location:
+    'Middle mediastinum within the pericardial sac, extending obliquely superiorly, anteriorly, and to the right from the base of the left ventricle at the level of the third left costal cartilage to the upper border of the second right costal cartilage.',
+  anatomicalFeatures: [
+    'Aortic sinuses (of Valsalva): Three dilatations of the aortic root directly superior to the aortic valve cusps, giving rise to the left and right coronary arteries.',
+    'Sinotubular junction: Distinct anatomical transition between the bulbous aortic root and the cylindrical ascending aorta.',
+    'Pericardial sleeve: Enclosed within a common sheath of serous pericardium shared with the adjacent pulmonary trunk.'
+  ],
+  function:
+    'Receives the left ventricular systolic stroke volume under peak hemodynamic pressure, channels blood superiorly toward the arch, and fills coronary arteries during ventricular diastole via elastic recoil in the aortic sinuses.',
+  relatedStructures: [
+    { conceptId: 'FMA7088', name: 'Heart', relationship: 'Originates directly from the left ventricle' },
+    { conceptId: 'FMA8612', name: 'Pulmonary trunk', relationship: 'Ascends adjacent to and right of the pulmonary trunk' },
+    { conceptId: 'FMA3768', name: 'Arch of aorta', relationship: 'Continuous distally with the aortic arch at the sternal angle' }
+  ],
+  clinicalNotes:
+    'Stanford Type A aortic dissection originates in or involves the ascending aorta and is a surgical emergency due to risk of pericardial tamponade, acute aortic valve regurgitation, or coronary malperfusion.'
+};
+
+KNOWLEDGE_BASE['FMA3768'] = {
+  ...KNOWLEDGE_BASE['FMA3734'],
+  conceptId: 'FMA3768',
+  canonicalName: 'Arch of aorta',
+  overview:
+    'The arch of the aorta is the curved segment of the systemic arterial trunk connecting the ascending aorta to the descending thoracic aorta, spanning across the superior mediastinum.',
+  location:
+    'Superior mediastinum, arching posterosuperiorly and to the left anterior to the trachea and esophagus, reaching the left side of the T4 vertebral body at the sternal angle of Louis.',
+  anatomicalFeatures: [
+    'Brachiocephalic artery: First and largest branch, dividing into right subclavian and right common carotid arteries.',
+    'Left common carotid artery: Second branch, ascending to supply the left side of the neck, head, and encephalon.',
+    'Left subclavian artery: Third branch, ascending to supply the left upper extremity and vertebral artery.',
+    'Ligamentum arteriosum: Fibrous remnant of the fetal ductus arteriosus connecting the inferior aspect of the arch to the pulmonary trunk bifurcation.'
+  ],
+  function:
+    'Channels systemic blood flow from the anterior mediastinum to the posterior thoracic cavity while supplying the head, neck, upper extremities, and brain.',
+  relatedStructures: [
+    { conceptId: 'FMA3734', name: 'Aorta', relationship: 'Transitional curved segment of the greater aorta' },
+    { conceptId: 'FMA7394', name: 'Trachea', relationship: 'Arches anterior and leftward across the lower trachea' },
+    { conceptId: 'FMA7131', name: 'Esophagus', relationship: 'Passes to the left of the esophagus' },
+    { conceptId: 'FMA8612', name: 'Pulmonary trunk', relationship: 'Connected to the pulmonary bifurcation via the ligamentum arteriosum' }
+  ],
+  clinicalNotes:
+    'Coarctation of the aorta is a congenital narrowing typically located near the ductus arteriosus / ligamentum arteriosum, causing upper-extremity hypertension, diminished femoral pulses, and collateral intercostal arterial hypertrophy (producing rib notching).'
+};
+
+KNOWLEDGE_BASE['FMA3784'] = {
+  ...KNOWLEDGE_BASE['FMA3734'],
+  conceptId: 'FMA3784',
+  canonicalName: 'Descending aorta',
+  overview:
+    'The descending aorta is the longest continuous portion of the aorta, beginning at the termination of the aortic arch at the T4 vertebral level and extending through both the posterior mediastinum (thoracic aorta) and retroperitoneal abdomen (abdominal aorta) down to its terminal bifurcation at L4.',
+  location:
+    'Thoracic posterior mediastinum and retroperitoneal abdominal cavity, coursing anterior and slightly left of the vertebral column from T4 down to L4.',
+  anatomicalFeatures: [
+    'Thoracic descending segment: Lies in the posterior mediastinum from T4 to T12, giving rise to paired posterior intercostal arteries, subcostal arteries, and visceral bronchial and esophageal branches.',
+    'Aortic hiatus: Traverses the diaphragm at the T12 vertebral level accompanied by the thoracic duct and azygos vein.',
+    'Abdominal descending segment: Courses retroperitoneally from T12 to L4, distributing blood to abdominal viscera, the abdominal wall, and lower extremities.'
+  ],
+  function:
+    'Delivers oxygenated blood to the thoracic wall and viscera, spinal cord, abdominal organs, pelvic structures, and both lower extremities.',
+  relatedStructures: [
+    { conceptId: 'FMA3734', name: 'Aorta', relationship: 'Descending continuation of the systemic arterial trunk' },
+    { conceptId: 'FMA13478', name: 'Vertebral column', relationship: 'Courses along the anterior and left lateral aspect of thoracic and lumbar vertebrae' },
+    { conceptId: 'FMA13295', name: 'Diaphragm', relationship: 'Passes through the diaphragmatic aortic hiatus at T12' }
+  ],
+  clinicalNotes:
+    'Thoracic descending aortic aneurysms and Stanford Type B dissections (originating distal to the left subclavian artery) are managed medically or with thoracic endovascular aortic repair (TEVAR). Compromise of the great radicular artery (of Adamkiewicz) arising from lower intercostal or upper lumbar branches carries risk of spinal cord ischemia.'
+};
+
+KNOWLEDGE_BASE['FMA3789'] = {
+  ...KNOWLEDGE_BASE['FMA3734'],
+  conceptId: 'FMA3789',
+  canonicalName: 'Abdominal aorta',
+  overview:
+    'The abdominal aorta is the final segment of the aorta, situated retroperitoneally between the diaphragmatic aortic hiatus at T12 and its terminal bifurcation into the left and right common iliac arteries at L4.',
+  location:
+    'Retroperitoneal space of the posterior abdominal wall, anterior to the lumbar vertebral bodies (T12–L4) and immediately to the left of the inferior vena cava.',
+  anatomicalFeatures: [
+    'Unpaired anterior visceral branches: Celiac trunk (T12), superior mesenteric artery (L1), and inferior mesenteric artery (L3) supplying the foregut, midgut, and hindgut.',
+    'Paired lateral visceral branches: Middle suprarenal arteries, renal arteries (L1–L2), and gonadal (testicular or ovarian) arteries.',
+    'Parietal branches: Inferior phrenic arteries, four pairs of lumbar arteries, and the median sacral artery.',
+    'Terminal bifurcation: Divides at the level of the L4 vertebra into the left and right common iliac arteries.'
+  ],
+  function:
+    'Serves as the principal arterial trunk supplying the entire digestive tract, accessory digestive organs, kidneys, pelvic organs, and lower extremities.',
+  relatedStructures: [
+    { conceptId: 'FMA3734', name: 'Aorta', relationship: 'Abdominal retroperitoneal portion of the aorta' },
+    { conceptId: 'FMA10951', name: 'Inferior vena cava', relationship: 'Runs parallel and immediately to the right of the abdominal aorta' },
+    { conceptId: 'FMA7204', name: 'Right kidney', relationship: 'Right renal artery crosses posterior to the IVC to reach right kidney' },
+    { conceptId: 'FMA7205', name: 'Left kidney', relationship: 'Left renal artery arises directly from abdominal aorta' }
+  ],
+  clinicalNotes:
+    'Abdominal aortic aneurysms (AAAs) most frequently develop in the infrarenal segment between the renal artery origins and the iliac bifurcation. Rupture presents with the classic triad of sudden severe flank/back pain, hypotension, and a pulsatile abdominal mass.'
+};
+
+KNOWLEDGE_BASE['FMA7480'] = {
+  ...KNOWLEDGE_BASE['FMA7574'],
+  conceptId: 'FMA7480',
+  canonicalName: 'Rib cage',
+  overview:
+    'The rib cage (thoracic cage) is the osteocartilaginous conical framework formed by the 12 thoracic vertebrae posteriorly, 12 pairs of ribs and their costal cartilages anterolaterally, and the sternum anteriorly.',
+  location:
+    'Torso, enclosing the thoracic cavity between the superior thoracic aperture (thoracic inlet) at the neck base and the inferior thoracic aperture (thoracic outlet) closed by the diaphragm.',
+  anatomicalFeatures: [
+    'Thoracic skeleton: Formed by 12 pairs of ribs, 12 thoracic vertebrae, intervertebral discs, and the three parts of the sternum.',
+    'Costal cartilages: Bars of hyaline cartilage providing elasticity and compliance to the anterior thoracic wall.',
+    'Intercostal spaces: 11 pairs of intercostal spaces occupied by intercostal muscles, vessels, and nerves.'
+  ],
+  function:
+    'Protects thoracic and upper abdominal organs, supports the shoulder girdle and upper extremities, and dynamically alters intrathoracic pressure and volume during respiration.',
+  relatedStructures: [
+    { conceptId: 'FMA7574', name: 'Ribs', relationship: 'Constituent osseous ribs forming the lateral cage' },
+    { conceptId: 'FMA7485', name: 'Sternum', relationship: 'Anterior osseous strut of the rib cage' },
+    { conceptId: 'FMA13478', name: 'Vertebral column', relationship: 'Posterior axial anchor of the rib cage' }
+  ],
+  clinicalNotes:
+    'Deformities of the thoracic cage include pectus excavatum (funnel chest, concave sternum) and pectus carinatum (pigeon chest, protrusion of the sternum).',
+  sources: [getCitationSource('ribs'), getCitationSource('sternum')]
 };
 
 /**

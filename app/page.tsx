@@ -13,13 +13,17 @@ import {
   CheckCircle2,
   ChevronLeft,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
   Compass,
+  CornerDownLeft,
   Eye,
   EyeOff,
   FileText,
   Focus,
   GitFork,
   GraduationCap,
+  Hash,
   HeartPulse,
   HelpCircle,
   Info,
@@ -27,7 +31,10 @@ import {
   Lightbulb,
   MapPin,
   Maximize2,
+  Menu,
+  Minus,
   Network,
+  PanelLeftClose,
   Pause,
   Play,
   RotateCcw,
@@ -35,10 +42,17 @@ import {
   Scissors,
   Search,
   Share2,
+  BarChart2,
+  Download,
+  History,
   ShieldAlert,
+  Sliders,
+  Sparkles,
   Stethoscope,
+  Trash2,
   Trophy,
   Undo2,
+  Upload,
   X,
   ZoomIn,
   ZoomOut
@@ -49,6 +63,7 @@ import {Slider} from '@/components/ui/slider';
 import {Switch} from '@/components/ui/switch';
 import {Sheet,SheetContent,SheetTitle,SheetDescription} from '@/components/ui/sheet';
 import AnatomyScene from './scene';
+import { findCitationByReference } from './citations';
 import {
   DEFAULT_VISIBLE,
   SYSTEMS,
@@ -60,7 +75,13 @@ import {
   type SystemId,
   type View
 } from './anatomy';
-import {findKnowledgeForConcept} from './knowledge';
+import {findKnowledgeForConcept, KNOWLEDGE_BASE} from './knowledge';
+import {
+  buildAnatomySearchIndex,
+  executeAnatomySearch,
+  type AnatomySearchIndex,
+  type SearchResultItem
+} from './anatomy-search';
 import {GUIDED_EXPLORATIONS, type GuidedExploration} from './guides';
 import {
   QUESTION_BANK,
@@ -71,9 +92,25 @@ import {
   type UserAnswerRecord
 } from './learning';
 import {
+  loadPersistentLearningProgress,
+  recordCompletedAttempt,
+  recordCompletedGuide,
+  resetPersistentLearningProgress,
+  computeTopicSummaries,
+  exportLearningHistoryJSON,
+  importLearningHistoryJSON,
+  createEmptyLearningState,
+  LEARNING_STORAGE_KEY,
+  SYSTEM_TO_CATEGORY_MAP,
+  SYSTEM_TO_GUIDE_MAP,
+  type PersistentLearningState,
+  type QuizAttemptRecord
+} from './learning-progress';
+import {
   DISSECTION_PRESETS,
   DISSECTION_LAYERS,
   INITIAL_CLIPPING_STATE,
+  resolveEffectiveClippingState,
   type ClippingState,
   type ClippingOrientation,
   type DissectionPreset,
@@ -83,6 +120,7 @@ import {
   VERIFIED_RELATIONSHIPS,
   RELATIONSHIP_CATEGORY_LABELS,
   RELATIONSHIP_TYPE_LABELS,
+  RELATIONSHIP_QUICK_HUBS,
   getRelationshipsForConcept,
   hasRelationshipsForConcept,
   buildRelationshipGraph,
@@ -115,6 +153,8 @@ export default function Home() {
   const [about, setAbout] = useState(false);
   const [query, setQuery] = useState('');
   const [isSearching, setIsSearching] = useState(false);
+  const [activeSearchIndex, setActiveSearchIndex] = useState<number>(-1);
+  const searchResultsListRef = useRef<HTMLDivElement>(null);
   const [chosen, setChosen] = useState<Concept | null>(null);
   const [inspectorTab, setInspectorTab] = useState<'overview' | 'anatomy' | 'function' | 'clinical' | 'relationships'>('overview');
   const [guidesOpen, setGuidesOpen] = useState(false);
@@ -129,6 +169,12 @@ export default function Home() {
   // Learning Mode State
   const [learningSetupOpen, setLearningSetupOpen] = useState(false);
   const [learningResultsOpen, setLearningResultsOpen] = useState(false);
+  const [learningModalTab, setLearningModalTab] = useState<'setup' | 'dashboard' | 'settings'>('setup');
+  const [learningProgress, setLearningProgress] = useState<PersistentLearningState>(loadPersistentLearningProgress);
+  const [targetedConcept, setTargetedConcept] = useState<{ id: string; name: string; hasDirectQuestion: boolean } | null>(null);
+  const sessionAttemptIdRef = useRef<string>('');
+  const [confirmResetOpen, setConfirmResetOpen] = useState(false);
+  const [dataImportStatus, setDataImportStatus] = useState<{ message: string; isError: boolean } | null>(null);
   const [sessionConfig, setSessionConfig] = useState<LearningSessionConfig>({
     category: 'all',
     difficulty: 'all',
@@ -162,10 +208,15 @@ export default function Home() {
 
   // Dissection & Cross-Section Mode State
   const [dissectionOpen, setDissectionOpen] = useState(false);
+  const [dissectionExpanded, setDissectionExpanded] = useState(false);
   const [activeDissectionPreset, setActiveDissectionPreset] = useState<string | null>('full-body');
   const [clippingState, setClippingState] = useState<ClippingState>(INITIAL_CLIPPING_STATE);
   const [dissectionTab, setDissectionTab] = useState<'presets' | 'layers' | 'cross-section'>('presets');
   const [dissectionHistory, setDissectionHistory] = useState<SystemId[][]>([]);
+
+  // Panel Collapsible State
+  const [inspectorCollapsed, setInspectorCollapsed] = useState(false);
+  const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
 
   // Anatomical Relationship Explorer State
   const [relationshipsOpen, setRelationshipsOpen] = useState(false);
@@ -200,6 +251,25 @@ export default function Home() {
     return () => abort.abort();
   }, []);
 
+  // BUG-STOR-02: Multi-tab persistent learning progress synchronization
+  useEffect(() => {
+    const handleStorageChange = (e: StorageEvent) => {
+      if (e.key !== LEARNING_STORAGE_KEY) return;
+      if (!e.newValue) {
+        setLearningProgress(createEmptyLearningState());
+        return;
+      }
+      try {
+        const freshState = loadPersistentLearningProgress();
+        setLearningProgress(freshState);
+      } catch (err) {
+        console.warn('[LearningProgress] Error syncing progress from storage event:', err);
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
@@ -212,7 +282,7 @@ export default function Home() {
         setGuidesOpen(false);
         setLearningSetupOpen(false);
         setLearningResultsOpen(false);
-        setDissectionOpen(false);
+        closeDissection();
         setRelationshipsOpen(false);
         if (activeGuideRef.current) {
           setActiveGuide(null);
@@ -261,27 +331,124 @@ export default function Home() {
         : state.visible.includes(p.system) || state.selected.includes(p.id)
     ).length ?? 0;
 
-  const results = useMemo(() => {
-    if (!atlas) return [];
-    const term = query.toLowerCase().trim();
-    if (!term) {
-      return ['heart', 'brain', 'liver', 'stomach', 'spleen', 'pancreas', 'urinary bladder', 'trachea']
-        .map(name => atlas.concepts.find(c => c.name.toLowerCase() === name))
-        .filter((x): x is Concept => !!x);
-    }
-    return atlas.concepts
-      .filter(c => c.name.toLowerCase().includes(term) || c.id.toLowerCase().includes(term))
-      .sort((a, b) => a.name.length - b.name.length)
-      .slice(0, 50);
-  }, [atlas, query]);
+  const searchIndex = useMemo(() => {
+    if (!atlas) return null;
+    return buildAnatomySearchIndex(atlas, KNOWLEDGE_BASE);
+  }, [atlas]);
+
+  const searchResults: SearchResultItem[] = useMemo(() => {
+    if (!searchIndex) return [];
+    return executeAnatomySearch(query, searchIndex, 40);
+  }, [searchIndex, query]);
+
+  useEffect(() => {
+    setActiveSearchIndex(searchResults.length > 0 ? 0 : -1);
+  }, [query, searchResults.length]);
 
   const choose = (c: Concept) => {
     setChosen(c);
-    setState(s => ({ ...s, selected: c.elements, isolate: false, rotate: false }));
+    if (c.elements && c.elements.length > 0) {
+      setState(s => ({
+        ...s,
+        selected: c.elements,
+        focusConceptId: c.id,
+        focusToken: (s.focusToken ?? 0) + 1,
+        isolate: false,
+        rotate: false
+      }));
+    } else {
+      setState(s => ({
+        ...s,
+        selected: [],
+        focusConceptId: undefined,
+        isolate: false,
+        rotate: false
+      }));
+    }
     setDetails(true);
+    setInspectorCollapsed(false);
     setIsSearching(false);
     setQuery('');
     setMobileSidebarOpen(false);
+  };
+
+  const chooseSearchResult = (item: SearchResultItem) => {
+    choose(item.concept);
+  };
+
+  const startGuideFromConcept = (conceptId: string) => {
+    const guide = GUIDED_EXPLORATIONS.find(g => g.steps.some(s => s.conceptId === conceptId));
+    if (!guide) return;
+    const stepIdx = guide.steps.findIndex(s => s.conceptId === conceptId);
+    closeDissection();
+    setActiveGuide(guide);
+    setGuidesOpen(false);
+    setIsSearching(false);
+    setMobileSidebarOpen(false);
+    navigateGuideStep(guide, stepIdx >= 0 ? stepIdx : 0);
+  };
+
+  const startLearningForConcept = (conceptId: string) => {
+    setIsSearching(false);
+    if (!atlas) {
+      setTargetedConcept(null);
+      setLearningSetupOpen(true);
+      return;
+    }
+    const concept = atlas.concepts.find(c => c.id === conceptId);
+    if (!concept) {
+      setTargetedConcept(null);
+      setLearningSetupOpen(true);
+      return;
+    }
+    const firstPart = concept.elements?.[0] ? parts.get(concept.elements[0]) : undefined;
+    const sys = firstPart?.system;
+    const mappedCategory = sys ? (SYSTEM_TO_CATEGORY_MAP[sys] ?? 'all') : 'all';
+    const hasDirect = QUESTION_BANK.some(q => q.targetConceptId === conceptId);
+
+    setTargetedConcept({
+      id: conceptId,
+      name: concept.name,
+      hasDirectQuestion: hasDirect
+    });
+
+    setSessionConfig(prev => ({
+      ...prev,
+      category: mappedCategory
+    }));
+    setLearningModalTab('setup');
+    setLearningSetupOpen(true);
+  };
+
+  const onSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (!isSearching) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      if (searchResults.length === 0) return;
+      setActiveSearchIndex(prev => {
+        const next = (prev + 1) % searchResults.length;
+        const el = document.getElementById(`search-opt-${next}`);
+        el?.scrollIntoView({ block: 'nearest' });
+        return next;
+      });
+    } else if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      if (searchResults.length === 0) return;
+      setActiveSearchIndex(prev => {
+        const next = prev <= 0 ? searchResults.length - 1 : prev - 1;
+        const el = document.getElementById(`search-opt-${next}`);
+        el?.scrollIntoView({ block: 'nearest' });
+        return next;
+      });
+    } else if (e.key === 'Enter') {
+      if (activeSearchIndex >= 0 && activeSearchIndex < searchResults.length) {
+        e.preventDefault();
+        chooseSearchResult(searchResults[activeSearchIndex]);
+      }
+    } else if (e.key === 'Escape') {
+      setIsSearching(false);
+      searchInputRef.current?.blur();
+    }
   };
 
   useEffect(() => {
@@ -293,8 +460,16 @@ export default function Home() {
     const p = parts.get(id);
     if (!p) return;
     setChosen({ id: p.conceptId, name: p.name, elements: [id] });
-    setState(s => ({ ...s, selected: [id], isolate: false, rotate: false }));
+    setState(s => ({
+      ...s,
+      selected: [id],
+      focusConceptId: p.conceptId,
+      focusToken: (s.focusToken ?? 0) + 1,
+      isolate: false,
+      rotate: false
+    }));
     setDetails(true);
+    setInspectorCollapsed(false);
 
     // Learning Mode structure identification evaluation
     if (activeLearningRef.current && sessionQuestionsRef.current.length > 0) {
@@ -309,7 +484,14 @@ export default function Home() {
           setCurrentAttemptStatus('correct');
           if (targetConcept) {
             setChosen(targetConcept);
-            setState(s => ({ ...s, selected: targetConcept.elements, isolate: false, rotate: false }));
+            setState(s => ({
+              ...s,
+              selected: targetConcept.elements,
+              focusConceptId: targetConcept.id,
+              focusToken: (s.focusToken ?? 0) + 1,
+              isolate: false,
+              rotate: false
+            }));
           }
           setUserAnswers(prev => {
             if (prev[q.id]) return prev;
@@ -456,8 +638,15 @@ export default function Home() {
     setClippingState(INITIAL_CLIPPING_STATE);
   };
 
+  const closeDissection = () => {
+    setDissectionOpen(false);
+    setDissectionExpanded(false);
+    setClippingState(INITIAL_CLIPPING_STATE);
+  };
+
   // Anatomical Relationship Explorer Handlers
   const openRelationshipExplorer = (conceptId?: string) => {
+    closeDissection();
     const targetId = conceptId || chosen?.id || 'FMA7088';
     setRelationshipRootConceptId(targetId);
     setRelationshipActiveConceptId(targetId);
@@ -492,7 +681,8 @@ export default function Home() {
     if (!state.visible.includes(systemId)) {
       setState(s => ({
         ...s,
-        visible: [...s.visible, systemId]
+        visible: [...s.visible, systemId],
+        focusToken: (s.focusToken ?? 0) + 1
       }));
     }
   };
@@ -535,9 +725,10 @@ export default function Home() {
   }, [relationshipActiveConceptId, relationshipDepth, atlas, parts]);
 
   const startLearningSession = (config: LearningSessionConfig) => {
-    const filtered = filterQuestions(config);
+    const filtered = filterQuestions(config, targetedConcept?.id);
     if (filtered.length === 0) return;
 
+    sessionAttemptIdRef.current = `attempt-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
     setSessionQuestions(filtered);
     setCurrentQIndex(0);
     setUserAnswers({});
@@ -547,6 +738,7 @@ export default function Home() {
     setRevealedSolution(false);
     setLastIncorrectName('');
     setIdentificationAttempts(0);
+    closeDissection();
     setActiveLearning(true);
     setLearningSetupOpen(false);
     setLearningResultsOpen(false);
@@ -602,6 +794,51 @@ export default function Home() {
     } else {
       setActiveLearning(false);
       setLearningResultsOpen(true);
+
+      // Record completed quiz session idempotently
+      if (sessionQuestions.length > 0 && sessionAttemptIdRef.current) {
+        const totalQuestions = sessionQuestions.length;
+        const currentScore = Object.values(userAnswers).filter(a => a.isCorrect).length;
+        const percentage = Math.round((currentScore / totalQuestions) * 100);
+        const questionIds = sessionQuestions.map(q => q.id);
+
+        const systemBreakdown: Record<string, { total: number; correct: number }> = {};
+        for (const q of sessionQuestions) {
+          const isCorrect = userAnswers[q.id]?.isCorrect ?? false;
+          if (!systemBreakdown[q.system]) {
+            systemBreakdown[q.system] = { total: 0, correct: 0 };
+          }
+          systemBreakdown[q.system].total += 1;
+          if (isCorrect) systemBreakdown[q.system].correct += 1;
+        }
+
+        const conceptResults = sessionQuestions
+          .filter(q => q.targetConceptId)
+          .map(q => ({
+            conceptId: q.targetConceptId!,
+            conceptName: q.targetConceptName ?? q.title,
+            system: q.system,
+            isCorrect: userAnswers[q.id]?.isCorrect ?? false
+          }));
+
+        setLearningProgress(prev =>
+          recordCompletedAttempt(
+            prev,
+            {
+              id: sessionAttemptIdRef.current,
+              timestamp: Date.now(),
+              category: sessionConfig.category,
+              difficulty: sessionConfig.difficulty,
+              totalQuestions,
+              score: currentScore,
+              percentage,
+              questionIds,
+              systemBreakdown
+            },
+            conceptResults
+          )
+        );
+      }
     }
   };
 
@@ -615,6 +852,45 @@ export default function Home() {
     setRevealedSolution(false);
     setLastIncorrectName('');
     setIdentificationAttempts(0);
+    sessionAttemptIdRef.current = '';
+  };
+
+  const topicStats = useMemo(() => computeTopicSummaries(learningProgress), [learningProgress]);
+
+  const handleExportHistory = () => {
+    const jsonStr = exportLearningHistoryJSON(learningProgress);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `anatomy-explorer-learning-history-${new Date().toISOString().slice(0, 10)}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const handleImportHistory = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = evt => {
+      const text = (evt.target?.result as string) || '';
+      const res = importLearningHistoryJSON(text);
+      if (res.success && res.state) {
+        setLearningProgress(res.state);
+        setDataImportStatus({ message: 'Learning history successfully restored!', isError: false });
+      } else {
+        setDataImportStatus({ message: res.error ?? 'Failed to import JSON.', isError: true });
+      }
+    };
+    reader.readAsText(file);
+    e.target.value = '';
+  };
+
+  const handleResetLearning = () => {
+    const fresh = resetPersistentLearningProgress();
+    setLearningProgress(fresh);
+    setConfirmResetOpen(false);
+    setDataImportStatus({ message: 'All learning progress has been reset.', isError: false });
   };
 
   const handleMultipleChoiceSelect = (opt: string) => {
@@ -699,6 +975,8 @@ export default function Home() {
           ...s,
           visible: nextVisible,
           selected: concept.elements,
+          focusConceptId: concept.id,
+          focusToken: (s.focusToken ?? 0) + 1,
           isolate: false,
           rotate: false,
           view: step.cameraView ?? s.view,
@@ -712,6 +990,7 @@ export default function Home() {
   };
 
   const startGuide = (guide: GuidedExploration) => {
+    closeDissection();
     setActiveGuide(guide);
     setGuidesOpen(false);
     setMobileSidebarOpen(false);
@@ -754,7 +1033,11 @@ export default function Home() {
       {atlas && (
         <AnatomyScene
           atlas={atlas}
-          state={{ ...state, clipping: clippingState, inspectorOpen: details && selectedParts.length > 0 }}
+          state={{
+            ...state,
+            clipping: resolveEffectiveClippingState(dissectionOpen, Boolean(activeGuide), Boolean(activeLearning), clippingState),
+            inspectorOpen: details && (selectedParts.length > 0 || chosen !== null) && !inspectorCollapsed
+          }}
           onSelect={choosePart}
           onProgress={n => {
             setProgress(n);
@@ -768,8 +1051,24 @@ export default function Home() {
       <div className="vignette" />
 
       {/* 1. LEFT SIDEBAR — ANATOMY EXPLORER */}
+      {sidebarCollapsed && (
+        <button
+          type="button"
+          className="sidebar-reopen-btn glass"
+          onClick={() => {
+            setSidebarCollapsed(false);
+            window.dispatchEvent(new Event('resize'));
+          }}
+          aria-label="Open Sidebar"
+          title="Open Anatomy Explorer"
+        >
+          <Menu size={16} />
+          <span>Atlas</span>
+        </button>
+      )}
+
       <aside
-        className={`explorer-sidebar glass ${mobileSidebarOpen ? 'mobile-open' : ''}`}
+        className={`explorer-sidebar glass ${sidebarCollapsed ? 'is-collapsed' : ''} ${mobileSidebarOpen ? 'mobile-open' : ''}`}
         aria-label="Anatomy Explorer Sidebar"
       >
         <div className="sidebar-header">
@@ -786,6 +1085,18 @@ export default function Home() {
               {atlas ? atlas.parts.length.toLocaleString() : '2,234'} Meshes · 15 Systems
             </span>
           </div>
+          <button
+            type="button"
+            className="sidebar-collapse-btn"
+            onClick={() => {
+              setSidebarCollapsed(true);
+              window.dispatchEvent(new Event('resize'));
+            }}
+            aria-label="Collapse Sidebar"
+            title="Collapse Sidebar"
+          >
+            <PanelLeftClose size={16} />
+          </button>
           <Button
             variant="ghost"
             className="mobile-toggle-btn icon-button"
@@ -804,14 +1115,20 @@ export default function Home() {
               ref={searchInputRef}
               type="text"
               className="search-input"
-              placeholder="Search anatomy or FMA ID…"
+              placeholder="Search anatomy, synonyms, or FMA ID…"
               value={query}
               onChange={e => {
                 setQuery(e.target.value);
                 setIsSearching(true);
               }}
               onFocus={() => setIsSearching(true)}
-              aria-label="Search named anatomical structures"
+              onKeyDown={onSearchKeyDown}
+              role="combobox"
+              aria-expanded={isSearching}
+              aria-controls="anatomy-search-results"
+              aria-autocomplete="list"
+              aria-activedescendant={activeSearchIndex >= 0 ? `search-opt-${activeSearchIndex}` : undefined}
+              aria-label="Search named anatomical structures, synonyms, and FMA IDs"
             />
             {query ? (
               <button
@@ -831,23 +1148,178 @@ export default function Home() {
 
           {/* Live Search Results Overlay */}
           {isSearching && (
-            <div className="search-results-overlay glass">
-              <div className="search-results-list">
-                {results.length > 0 ? (
-                  results.map(c => (
-                    <button
-                      key={c.id}
-                      className="search-result-item"
-                      onClick={() => choose(c)}
-                    >
-                      <span className="search-result-name">{c.name}</span>
-                      <span className="search-result-count">
-                        {c.elements.length} {c.elements.length === 1 ? 'part' : 'parts'}
-                      </span>
-                    </button>
-                  ))
+            <div
+              className="search-results-overlay glass"
+              role="listbox"
+              id="anatomy-search-results"
+              aria-label="Anatomical Search Results"
+            >
+              {/* Header meta bar */}
+              <div className="search-results-header">
+                <span className="search-meta-count">
+                  {query ? `${searchResults.length} ${searchResults.length === 1 ? 'result' : 'results'}` : 'Suggested Anatomical Hubs'}
+                </span>
+                <span className="search-meta-hint">
+                  <CornerDownLeft size={10} style={{ display: 'inline', marginRight: '3px', verticalAlign: '-1px' }} />
+                  Select with ↵ · ↑↓ Navigate
+                </span>
+              </div>
+
+              <div className="search-results-list" ref={searchResultsListRef}>
+                {searchResults.length > 0 ? (
+                  searchResults.map((item, idx) => {
+                    const isSelected = idx === activeSearchIndex;
+                    const hiddenInfo = isConceptHiddenIn3D(item.conceptId);
+                    const hasTour = GUIDED_EXPLORATIONS.some(g => g.steps.some(s => s.conceptId === item.conceptId));
+                    const hasQuiz = QUESTION_BANK.some(q => q.targetConceptId === item.conceptId);
+                    const hasRel = hasRelationshipsForConcept(item.conceptId);
+
+                    return (
+                      <div
+                        key={item.conceptId}
+                        id={`search-opt-${idx}`}
+                        role="option"
+                        aria-selected={isSelected}
+                        className={`search-result-card ${isSelected ? 'active-highlight' : ''}`}
+                        onClick={() => chooseSearchResult(item)}
+                        onMouseEnter={() => setActiveSearchIndex(idx)}
+                      >
+                        <div className="search-result-left">
+                          <div className="search-result-primary-row">
+                            <span className="search-result-name">{item.canonicalName}</span>
+                            <span className="search-result-fma-badge">{item.conceptId}</span>
+                            {item.systemName && (
+                              <span
+                                className="search-result-system-badge"
+                                style={{
+                                  backgroundColor: `${item.systemColor}20`,
+                                  borderColor: `${item.systemColor}60`,
+                                  color: item.systemColor
+                                }}
+                              >
+                                {item.systemName}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="search-result-sub-row">
+                            {/* Matched Synonym Callout */}
+                            {item.matchedAlias && (
+                              <span className="search-synonym-pill">
+                                <Sparkles size={10} />
+                                Synonym: <strong>"{item.matchedAlias}"</strong>
+                              </span>
+                            )}
+
+                            {/* Non-visualizable Concept Badge */}
+                            {!item.isVisualizable && (
+                              <span className="search-novis-pill" title="Concept is indexed in reference catalog but has no 3D geometry">
+                                <Info size={10} />
+                                Reference Only (No 3D Mesh)
+                              </span>
+                            )}
+
+                            {/* Hidden in 3D Warning Badge */}
+                            {hiddenInfo.isHidden && hiddenInfo.system && (
+                              <span className="search-hidden-pill" title={`Hidden by current visibility or dissection filter (${hiddenInfo.systemName})`}>
+                                <EyeOff size={10} />
+                                Hidden in 3D ({hiddenInfo.systemName})
+                              </span>
+                            )}
+
+                            {/* Educational Snippet */}
+                            {item.educationalSummary && !item.matchedAlias && (
+                              <span className="search-snippet-text">{item.educationalSummary}</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="search-result-right">
+                          <span className="search-result-count">
+                            {item.meshCount} {item.meshCount === 1 ? 'part' : 'parts'}
+                          </span>
+
+                          <div className="search-quick-actions">
+                            {hiddenInfo.isHidden && hiddenInfo.system && (
+                              <button
+                                className="search-action-chip reveal"
+                                title={`Reveal ${hiddenInfo.systemName} in 3D without altering dissection preset`}
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  revealSystemIn3D(hiddenInfo.system!);
+                                }}
+                              >
+                                Reveal
+                              </button>
+                            )}
+
+                            {hasRel && (
+                              <button
+                                className="search-action-chip"
+                                title="Explore Verified Relationships Graph"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  setIsSearching(false);
+                                  openRelationshipExplorer(item.conceptId);
+                                }}
+                              >
+                                <Network size={11} />
+                              </button>
+                            )}
+
+                            {hasTour && (
+                              <button
+                                className="search-action-chip"
+                                title="Start Guided Exploration for this structure"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  startGuideFromConcept(item.conceptId);
+                                }}
+                              >
+                                <Compass size={11} />
+                              </button>
+                            )}
+
+                            {hasQuiz && (
+                              <button
+                                className="search-action-chip"
+                                title="Practice structure in Learning Mode"
+                                onClick={e => {
+                                  e.stopPropagation();
+                                  startLearningForConcept(item.conceptId);
+                                }}
+                              >
+                                <GraduationCap size={11} />
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })
                 ) : (
-                  <div className="search-empty">No anatomical structures match your search.</div>
+                  <div className="search-empty-box">
+                    <AlertCircle size={22} className="search-empty-icon" />
+                    <div className="search-empty-title">No anatomical structures match "{query}"</div>
+                    <p className="search-empty-desc">
+                      Try searching by canonical name (e.g. <em>Femur</em>), verified common synonym (e.g. <em>Windpipe</em>, <em>Kneecap</em>, <em>Collarbone</em>), physiological system, or FMA ID (e.g. <em>FMA7088</em>).
+                    </p>
+                    <div className="search-empty-suggestions">
+                      <span className="search-suggest-label">Suggestions:</span>
+                      {['Heart', 'Brain', 'Windpipe', 'Kneecap', 'Liver', 'Femur', 'Skull'].map(s => (
+                        <button
+                          key={s}
+                          className="search-suggest-chip"
+                          onClick={() => {
+                            setQuery(s.toLowerCase());
+                            searchInputRef.current?.focus();
+                          }}
+                        >
+                          {s}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             </div>
@@ -878,6 +1350,7 @@ export default function Home() {
           <button
             className="learning-mode-trigger-card"
             onClick={() => {
+              setTargetedConcept(null);
               setLearningSetupOpen(true);
               setGuidesOpen(false);
             }}
@@ -890,7 +1363,11 @@ export default function Home() {
               <div>
                 <div className="learning-trigger-title">Learning Mode</div>
                 <div className="learning-trigger-sub">
-                  <span>Interactive 3D Quiz</span>
+                  <span>
+                    {learningProgress.totalSessionsCompleted > 0
+                      ? `${learningProgress.overallAccuracy}% Acc · ${learningProgress.totalSessionsCompleted} ${learningProgress.totalSessionsCompleted === 1 ? 'Quiz' : 'Quizzes'}`
+                      : 'Interactive 3D Quiz'}
+                  </span>
                 </div>
               </div>
             </div>
@@ -902,11 +1379,14 @@ export default function Home() {
             className={`dissection-mode-trigger-card ${dissectionOpen ? 'active' : ''}`}
             onClick={() => {
               const nextOpen = !dissectionOpen;
-              setDissectionOpen(nextOpen);
-              if (nextOpen) {
+              if (!nextOpen) {
+                closeDissection();
+              } else {
+                setDissectionOpen(true);
                 setGuidesOpen(false);
                 setActiveGuide(null);
                 setActiveLearning(false);
+                setRelationshipsOpen(false);
               }
             }}
             aria-label="Toggle Dissection & Cross-Section Mode"
@@ -927,7 +1407,7 @@ export default function Home() {
               </div>
             </div>
             <span className="dissection-trigger-badge">
-              {clippingState.enabled ? 'CUT ACTIVE' : dissectionOpen ? 'ACTIVE' : 'READY'}
+              {dissectionOpen && clippingState.enabled ? 'CUT ACTIVE' : dissectionOpen ? 'ACTIVE' : 'READY'}
             </span>
           </button>
 
@@ -1055,7 +1535,10 @@ export default function Home() {
       </div>
 
       {/* Camera Toolbar (Top Right) */}
-      <nav className="camera-toolbar glass" aria-label="Camera Controls">
+      <nav
+        className={`camera-toolbar glass ${details && (selectedParts.length > 0 || chosen !== null) && !inspectorCollapsed ? 'inspector-active' : ''}`}
+        aria-label="Camera Controls"
+      >
         <button
           className="camera-btn mobile-toggle-btn"
           onClick={() => setMobileSidebarOpen(!mobileSidebarOpen)}
@@ -1104,30 +1587,393 @@ export default function Home() {
         </button>
       </nav>
 
-      {/* Bottom Control Dock */}
-      <div className="bottom-dock glass">
-        <div className="dock-slider-group">
-          <div className="dock-slider-header">
-            <span className="dock-label">Exploded View</span>
-            <span className="dock-readout">{Math.round(state.explode * 100)}%</span>
+      {/* Viewport Floating Footer Stack (Guaranteed Zero Overlap) */}
+      <div className="viewport-floating-footer">
+        {/* Bottom Exploded View Dock */}
+        {!activeGuide && !activeLearning && (
+          <div className="bottom-dock glass">
+            <div className="dock-slider-group">
+              <div className="dock-slider-header">
+                <span className="dock-label">Exploded View</span>
+                <span className="dock-readout">{Math.round(state.explode * 100)}%</span>
+              </div>
+              <Slider
+                aria-label="Explode anatomical pieces"
+                min={0}
+                max={100}
+                step={1}
+                value={[state.explode * 100]}
+                onValueChange={onExplodeChange}
+              />
+              <div className="dock-slider-footer">
+                <span>Assembled Body</span>
+                <span>Spaced Inventory</span>
+              </div>
+            </div>
+            <button className="dock-reset-btn" onClick={reset} aria-label="Reset Anatomy Assembly">
+              <RotateCcw size={16} />
+              <span>Reset</span>
+            </button>
           </div>
-          <Slider
-            aria-label="Explode anatomical pieces"
-            min={0}
-            max={100}
-            step={1}
-            value={[state.explode * 100]}
-            onValueChange={onExplodeChange}
-          />
-          <div className="dock-slider-footer">
-            <span>Assembled Body</span>
-            <span>Spaced Inventory</span>
+        )}
+
+        {/* Dissection Mode Controls (Compact Toolbar + Anchored Popover) */}
+        {dissectionOpen && !activeGuide && !activeLearning && (
+          <div className="dissection-mode-container" role="region" aria-label="Dissection & Cross-Section Controls">
+            {/* Popover (Expanded) */}
+            {dissectionExpanded && (
+              <div className="dissection-expanded-popover glass" role="dialog" aria-label="Dissection Settings">
+                {/* Header */}
+                <div className="dissection-popover-header">
+                  <div className="dissection-popover-identity">
+                    <span className="dissection-popover-tag">DISSECTION &amp; CROSS-SECTION</span>
+                    <span className="dissection-preset-active-indicator">
+                      {activeDissectionPreset
+                        ? `Preset: ${DISSECTION_PRESETS.find(p => p.id === activeDissectionPreset)?.name ?? 'Custom View'}`
+                        : 'Custom Layer Configuration'}
+                    </span>
+                  </div>
+                  <div className="dissection-popover-header-actions">
+                    <button
+                      type="button"
+                      className="dissection-action-btn"
+                      disabled={dissectionHistory.length === 0}
+                      onClick={undoDissection}
+                      title="Undo last dissection visibility change"
+                      aria-label="Undo Dissection"
+                    >
+                      <Undo2 size={12} />
+                      <span>Undo</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="dissection-action-btn"
+                      onClick={restoreAllDissection}
+                      title="Restore all 14 systems and reset cross-section plane"
+                      aria-label="Restore Full Anatomy"
+                    >
+                      <RotateCcw size={12} />
+                      <span>Restore All</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="dissection-collapse-action-btn"
+                      onClick={() => setDissectionExpanded(false)}
+                      title="Collapse to floating toolbar"
+                      aria-label="Collapse panel"
+                    >
+                      <ChevronDown size={14} />
+                      <span>Collapse</span>
+                    </button>
+                    <button
+                      type="button"
+                      className="dissection-exit-action-btn"
+                      onClick={closeDissection}
+                      title="Close Dissection Mode and return to Free Exploration"
+                      aria-label="Close Dissection Mode"
+                    >
+                      <X size={13} />
+                    </button>
+                  </div>
+                </div>
+
+                {/* Sub Tabs */}
+                <div className="dissection-tabs-bar" role="tablist" aria-label="Dissection Modes">
+                  <button
+                    type="button"
+                    className={`dissection-tab-btn ${dissectionTab === 'presets' ? 'active' : ''}`}
+                    role="tab"
+                    aria-selected={dissectionTab === 'presets'}
+                    onClick={() => setDissectionTab('presets')}
+                  >
+                    <Layers3 size={13} />
+                    <span>Anatomy Presets</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`dissection-tab-btn ${dissectionTab === 'layers' ? 'active' : ''}`}
+                    role="tab"
+                    aria-selected={dissectionTab === 'layers'}
+                    onClick={() => setDissectionTab('layers')}
+                  >
+                    <Eye size={13} />
+                    <span>Layer Reveal</span>
+                  </button>
+                  <button
+                    type="button"
+                    className={`dissection-tab-btn ${dissectionTab === 'cross-section' ? 'active' : ''}`}
+                    role="tab"
+                    aria-selected={dissectionTab === 'cross-section'}
+                    onClick={() => setDissectionTab('cross-section')}
+                  >
+                    <Scissors size={13} />
+                    <span>3D Cross-Section</span>
+                    {clippingState.enabled && (
+                      <span className="status-pulse" style={{ width: 6, height: 6, display: 'inline-block' }} />
+                    )}
+                  </button>
+                </div>
+
+                {/* Tab Content Body */}
+                <div className="dissection-popover-body">
+                  {/* Tab 1: Presets Grid */}
+                  {dissectionTab === 'presets' && (
+                    <div className="dissection-presets-grid">
+                      {DISSECTION_PRESETS.map(preset => {
+                        const isActive = activeDissectionPreset === preset.id;
+                        return (
+                          <button
+                            key={preset.id}
+                            type="button"
+                            className={`dissection-preset-card ${isActive ? 'active' : ''}`}
+                            onClick={() => applyDissectionPreset(preset)}
+                            title={preset.description}
+                          >
+                            <div className="dissection-preset-top">
+                              <span className="dissection-preset-name">{preset.name}</span>
+                              <span className="dissection-preset-badge">{preset.badge}</span>
+                            </div>
+                            <p className="dissection-preset-desc">{preset.description}</p>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Tab 2: Progressive Layer Peeling */}
+                  {dissectionTab === 'layers' && (
+                    <div className="dissection-layers-list">
+                      {DISSECTION_LAYERS.map(layer => {
+                        const systemsToCheck: SystemId[] = layer.id === 'layer-vessels' ? ['arterial', 'venous'] : [layer.system];
+                        const isVisible = systemsToCheck.some(sys => state.visible.includes(sys));
+
+                        return (
+                          <div key={layer.id} className="dissection-layer-row">
+                            <div className="dissection-layer-info">
+                              <span className="dissection-layer-name">{layer.name}</span>
+                              <span className="dissection-layer-desc">{layer.description}</span>
+                            </div>
+                            <button
+                              type="button"
+                              className={`dissection-layer-toggle-btn ${isVisible ? 'is-visible' : 'is-peeled'}`}
+                              onClick={() => toggleDissectionLayer(layer)}
+                              aria-label={`${isVisible ? 'Peel away' : 'Reveal'} ${layer.name}`}
+                            >
+                              {isVisible ? (
+                                <>
+                                  <Eye size={12} />
+                                  <span>Visible</span>
+                                </>
+                              ) : (
+                                <>
+                                  <EyeOff size={12} />
+                                  <span>Peeled Away</span>
+                                </>
+                              )}
+                            </button>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+
+                  {/* Tab 3: 3D Cross-Section (Planar Clipping Plane) */}
+                  {dissectionTab === 'cross-section' && (
+                    <div className="dissection-cross-section-box">
+                      <div className="cross-section-top-controls">
+                        <div className="cross-section-enable-toggle">
+                          <Switch
+                            checked={clippingState.enabled}
+                            onCheckedChange={enabled => updateClipping({ enabled })}
+                            aria-label="Enable 3D planar cross-section clipping"
+                          />
+                          <span>Planar Cross-Section Cut</span>
+                        </div>
+
+                        <div className="cross-section-plane-selector" role="radiogroup" aria-label="Clipping Orientation">
+                          {(['axial', 'sagittal', 'coronal'] as ClippingOrientation[]).map(ori => (
+                            <button
+                              key={ori}
+                              type="button"
+                              className={`plane-selector-btn ${clippingState.orientation === ori ? 'active' : ''}`}
+                              onClick={() => updateClipping({ orientation: ori, enabled: true })}
+                              aria-label={`Cut plane orientation ${ori}`}
+                            >
+                              {ori === 'axial' ? 'Axial (Y)' : ori === 'sagittal' ? 'Sagittal (X)' : 'Coronal (Z)'}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+
+                      {/* Slider Row */}
+                      <div className="cross-section-slider-row">
+                        <div className="cross-section-slider-header">
+                          <span>
+                            Cut Position ({clippingState.orientation === 'axial' ? 'Superior / Inferior' : clippingState.orientation === 'sagittal' ? 'Lateral / Medial' : 'Anterior / Posterior'})
+                          </span>
+                          <span className="cross-section-slider-readout">
+                            {Math.round(clippingState.offset)}%
+                          </span>
+                        </div>
+                        <Slider
+                          min={0}
+                          max={100}
+                          step={1}
+                          value={[clippingState.offset]}
+                          disabled={!clippingState.enabled}
+                          onValueChange={v => updateClipping({ offset: Array.isArray(v) ? v[0] : v })}
+                          aria-label="Cross-section cut depth position"
+                        />
+                      </div>
+
+                      {/* Action Buttons Row */}
+                      <div className="cross-section-actions-row">
+                        <button
+                          type="button"
+                          className="dissection-action-btn"
+                          onClick={() => updateClipping({ inverted: !clippingState.inverted })}
+                          title="Invert clipping normal to reveal opposing anatomical half"
+                        >
+                          <RotateCw size={12} />
+                          <span>Flip Direction ({clippingState.inverted ? 'Inverted' : 'Standard'})</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="dissection-action-btn"
+                          onClick={resetClipping}
+                          title="Reset clipping plane to default thoracic position"
+                        >
+                          <RotateCcw size={12} />
+                          <span>Reset Plane</span>
+                        </button>
+                      </div>
+
+                      {/* Disclaimer */}
+                      <div className="cross-section-disclaimer">
+                        <Info size={13} className="cross-section-disclaimer-icon" />
+                        <span>
+                          Planar cutaway via Three.js GPU local clipping planes. Non-destructive anatomical cross-section with interior surface rendering.
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Toolbar (Collapsed State - Always Visible in Dissection Mode) */}
+            <div className="dissection-compact-toolbar glass" role="toolbar" aria-label="Dissection Toolbar">
+              <div className="dissection-toolbar-left">
+                <span className="dissection-pill-tag">
+                  <Scissors size={12} />
+                  DISSECTION
+                </span>
+                <span className="dissection-current-name" title={activeDissectionPreset ? (DISSECTION_PRESETS.find(p => p.id === activeDissectionPreset)?.name ?? 'Custom View') : 'Custom View'}>
+                  {activeDissectionPreset
+                    ? (DISSECTION_PRESETS.find(p => p.id === activeDissectionPreset)?.name ?? 'Custom View')
+                    : 'Custom Layers'}
+                </span>
+                {clippingState.enabled && (
+                  <span className="dissection-cut-badge">CUT ACTIVE</span>
+                )}
+              </div>
+
+              <div className="dissection-toolbar-buttons">
+                <button
+                  type="button"
+                  className={`dissection-tool-btn ${dissectionExpanded && dissectionTab === 'presets' ? 'active' : ''}`}
+                  onClick={() => {
+                    setDissectionTab('presets');
+                    setDissectionExpanded(true);
+                  }}
+                  title="Open Anatomy Presets"
+                >
+                  <Layers3 size={13} />
+                  <span>Presets</span>
+                </button>
+                <button
+                  type="button"
+                  className={`dissection-tool-btn ${dissectionExpanded && dissectionTab === 'layers' ? 'active' : ''}`}
+                  onClick={() => {
+                    setDissectionTab('layers');
+                    setDissectionExpanded(true);
+                  }}
+                  title="Open Layer Reveal"
+                >
+                  <Eye size={13} />
+                  <span>Layers</span>
+                </button>
+                <button
+                  type="button"
+                  className={`dissection-tool-btn ${dissectionExpanded && dissectionTab === 'cross-section' ? 'active' : ''}`}
+                  onClick={() => {
+                    setDissectionTab('cross-section');
+                    setDissectionExpanded(true);
+                  }}
+                  title="Open 3D Cross-Section Controls"
+                >
+                  <Scissors size={13} />
+                  <span>Cross-section</span>
+                </button>
+
+                <div className="dissection-btn-sep" />
+
+                <button
+                  type="button"
+                  className="dissection-tool-btn"
+                  disabled={dissectionHistory.length === 0}
+                  onClick={undoDissection}
+                  title="Undo last layer change"
+                >
+                  <Undo2 size={13} />
+                  <span>Undo</span>
+                </button>
+                <button
+                  type="button"
+                  className="dissection-tool-btn"
+                  onClick={restoreAllDissection}
+                  title="Restore full anatomy"
+                >
+                  <RotateCcw size={13} />
+                  <span>Restore</span>
+                </button>
+
+                <div className="dissection-btn-sep" />
+
+                {dissectionExpanded ? (
+                  <button
+                    type="button"
+                    className="dissection-tool-btn expand-trigger active"
+                    onClick={() => setDissectionExpanded(false)}
+                    title="Collapse Dissection Panel"
+                  >
+                    <ChevronDown size={14} />
+                    <span>Collapse</span>
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    className="dissection-tool-btn expand-trigger"
+                    onClick={() => setDissectionExpanded(true)}
+                    title="Expand Dissection Panel"
+                  >
+                    <ChevronUp size={14} />
+                    <span>Expand</span>
+                  </button>
+                )}
+
+                <button
+                  type="button"
+                  className="dissection-tool-btn exit"
+                  onClick={closeDissection}
+                  title="Exit Dissection Mode"
+                >
+                  <X size={13} />
+                </button>
+              </div>
+            </div>
           </div>
-        </div>
-        <button className="dock-reset-btn" onClick={reset} aria-label="Reset Anatomy Assembly">
-          <RotateCcw size={16} />
-          <span>Reset</span>
-        </button>
+        )}
       </div>
 
       {/* Active Guided Exploration Floating Dock */}
@@ -1214,7 +2060,12 @@ export default function Home() {
               {isLast ? (
                 <button
                   className="guide-nav-btn guide-nav-btn-complete"
-                  onClick={exitGuide}
+                  onClick={() => {
+                    if (activeGuide) {
+                      setLearningProgress(prev => recordCompletedGuide(prev, activeGuide.id));
+                    }
+                    exitGuide();
+                  }}
                   aria-label="Complete Guided Exploration"
                 >
                   <CheckCircle2 size={15} />
@@ -1448,283 +2299,169 @@ export default function Home() {
         );
       })()}
 
-      {/* Active Dissection & Cross-Section Floating Dock */}
-      {dissectionOpen && !activeGuide && !activeLearning && (
-        <div
-          className="active-dissection-dock glass"
-          role="region"
-          aria-label="Dissection and Cross-Section Controls"
-        >
-          {/* Header */}
-          <div className="dissection-dock-header">
-            <div className="dissection-dock-identity">
-              <span className="dissection-dock-tag">DISSECTION &amp; CROSS-SECTION</span>
-              <span className="dissection-preset-active-indicator">
-                {activeDissectionPreset
-                  ? `Preset: ${DISSECTION_PRESETS.find(p => p.id === activeDissectionPreset)?.name ?? 'Custom View'}`
-                  : 'Custom Layer Configuration'}
-              </span>
-            </div>
-            <div className="dissection-dock-actions">
-              <button
-                className="dissection-action-btn"
-                disabled={dissectionHistory.length === 0}
-                onClick={undoDissection}
-                title="Undo last dissection visibility change"
-                aria-label="Undo Dissection"
-              >
-                <Undo2 size={13} />
-                <span>Undo</span>
-              </button>
-              <button
-                className="dissection-action-btn"
-                onClick={restoreAllDissection}
-                title="Restore all 14 systems and reset cross-section plane"
-                aria-label="Restore Full Anatomy"
-              >
-                <RotateCcw size={13} />
-                <span>Restore All</span>
-              </button>
-              <button
-                className="dissection-exit-btn"
-                onClick={() => setDissectionOpen(false)}
-                title="Close Dissection Mode and return to Free Exploration"
-                aria-label="Close Dissection Mode"
-              >
-                <X size={13} />
-                <span>Free Exploration</span>
-              </button>
-            </div>
-          </div>
-
-          {/* Sub Tabs */}
-          <div className="dissection-tabs-bar" role="tablist" aria-label="Dissection Mode Modes">
-            <button
-              className={`dissection-tab-btn ${dissectionTab === 'presets' ? 'active' : ''}`}
-              role="tab"
-              aria-selected={dissectionTab === 'presets'}
-              onClick={() => setDissectionTab('presets')}
-            >
-              <Layers3 size={13} />
-              <span>Anatomy Presets</span>
-            </button>
-            <button
-              className={`dissection-tab-btn ${dissectionTab === 'layers' ? 'active' : ''}`}
-              role="tab"
-              aria-selected={dissectionTab === 'layers'}
-              onClick={() => setDissectionTab('layers')}
-            >
-              <Eye size={13} />
-              <span>Layer Reveal</span>
-            </button>
-            <button
-              className={`dissection-tab-btn ${dissectionTab === 'cross-section' ? 'active' : ''}`}
-              role="tab"
-              aria-selected={dissectionTab === 'cross-section'}
-              onClick={() => setDissectionTab('cross-section')}
-            >
-              <Scissors size={13} />
-              <span>3D Cross-Section</span>
-              {clippingState.enabled && (
-                <span className="status-pulse" style={{ width: 6, height: 6, display: 'inline-block' }} />
-              )}
-            </button>
-          </div>
-
-          {/* Tab 1: Presets Grid */}
-          {dissectionTab === 'presets' && (
-            <div className="dissection-presets-grid">
-              {DISSECTION_PRESETS.map(preset => {
-                const isActive = activeDissectionPreset === preset.id;
-                return (
-                  <button
-                    key={preset.id}
-                    className={`dissection-preset-card ${isActive ? 'active' : ''}`}
-                    onClick={() => applyDissectionPreset(preset)}
-                    title={preset.description}
-                  >
-                    <div className="dissection-preset-top">
-                      <span className="dissection-preset-name">{preset.name}</span>
-                      <span className="dissection-preset-badge">{preset.badge}</span>
-                    </div>
-                    <p className="dissection-preset-desc">{preset.description}</p>
-                  </button>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Tab 2: Progressive Layer Peeling */}
-          {dissectionTab === 'layers' && (
-            <div className="dissection-layers-list">
-              {DISSECTION_LAYERS.map(layer => {
-                const systemsToCheck: SystemId[] = layer.id === 'layer-vessels' ? ['arterial', 'venous'] : [layer.system];
-                const isVisible = systemsToCheck.some(sys => state.visible.includes(sys));
-
-                return (
-                  <div key={layer.id} className="dissection-layer-row">
-                    <div className="dissection-layer-info">
-                      <span className="dissection-layer-name">{layer.name}</span>
-                      <span className="dissection-layer-desc">{layer.description}</span>
-                    </div>
-                    <button
-                      className={`dissection-layer-toggle-btn ${isVisible ? 'is-visible' : 'is-peeled'}`}
-                      onClick={() => toggleDissectionLayer(layer)}
-                      aria-label={`${isVisible ? 'Peel away' : 'Reveal'} ${layer.name}`}
-                    >
-                      {isVisible ? (
-                        <>
-                          <Eye size={13} />
-                          <span>Visible</span>
-                        </>
-                      ) : (
-                        <>
-                          <EyeOff size={13} />
-                          <span>Peeled Away</span>
-                        </>
-                      )}
-                    </button>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          {/* Tab 3: 3D Cross-Section (Planar Clipping Plane) */}
-          {dissectionTab === 'cross-section' && (
-            <div className="dissection-cross-section-box">
-              <div className="cross-section-top-controls">
-                <div className="cross-section-enable-toggle">
-                  <Switch
-                    checked={clippingState.enabled}
-                    onCheckedChange={enabled => updateClipping({ enabled })}
-                    aria-label="Enable 3D planar cross-section clipping"
-                  />
-                  <span>Planar Cross-Section Cut</span>
-                </div>
-
-                <div className="cross-section-plane-selector" role="radiogroup" aria-label="Clipping Orientation">
-                  {(['axial', 'sagittal', 'coronal'] as ClippingOrientation[]).map(ori => (
-                    <button
-                      key={ori}
-                      className={`plane-selector-btn ${clippingState.orientation === ori ? 'active' : ''}`}
-                      onClick={() => updateClipping({ orientation: ori, enabled: true })}
-                      aria-label={`Cut plane orientation ${ori}`}
-                    >
-                      {ori === 'axial' ? 'Axial (Y)' : ori === 'sagittal' ? 'Sagittal (X)' : 'Coronal (Z)'}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Slider Row */}
-              <div className="cross-section-slider-row">
-                <div className="cross-section-slider-header">
-                  <span>
-                    Cut Position ({clippingState.orientation === 'axial' ? 'Superior / Inferior' : clippingState.orientation === 'sagittal' ? 'Lateral / Medial' : 'Anterior / Posterior'})
-                  </span>
-                  <span className="cross-section-slider-readout">
-                    {Math.round(clippingState.offset)}%
-                  </span>
-                </div>
-                <Slider
-                  min={0}
-                  max={100}
-                  step={1}
-                  value={[clippingState.offset]}
-                  disabled={!clippingState.enabled}
-                  onValueChange={v => updateClipping({ offset: Array.isArray(v) ? v[0] : v })}
-                  aria-label="Cross-section cut depth position"
-                />
-              </div>
-
-              {/* Action Buttons Row */}
-              <div className="cross-section-actions-row">
-                <button
-                  className="dissection-action-btn"
-                  onClick={() => updateClipping({ inverted: !clippingState.inverted })}
-                  title="Invert clipping normal to reveal opposing anatomical half"
-                >
-                  <RotateCw size={13} />
-                  <span>Flip Cut Direction ({clippingState.inverted ? 'Inverted' : 'Standard'})</span>
-                </button>
-                <button
-                  className="dissection-action-btn"
-                  onClick={resetClipping}
-                  title="Reset clipping plane to default thoracic position"
-                >
-                  <RotateCcw size={13} />
-                  <span>Reset Plane</span>
-                </button>
-              </div>
-
-              {/* Disclaimer */}
-              <div className="cross-section-disclaimer">
-                <Info size={14} className="cross-section-disclaimer-icon" />
-                <span>
-                  Rendering-based planar cutaway via Three.js GPU local clipping planes. Non-destructive anatomical cross-section with double-sided interior surface rendering.
-                </span>
-              </div>
-            </div>
-          )}
-        </div>
-      )}
 
       {/* 3. RIGHT SIDEBAR — ANATOMY INSPECTOR */}
-      {details && selectedParts.length > 0 && (
-        <aside className="inspector-panel glass detail-sheet" aria-label="Anatomical Structure Inspector">
-          {/* Header */}
-          <div className="inspector-header">
-            <div className="inspector-header-top">
-              <span className="system-tag">
-                <span className="system-indicator" style={{ background: system?.color }} />
-                {knowledge ? knowledge.anatomicalSystem.toUpperCase() : system?.name ?? 'ANATOMY'}
+      {details && (selectedParts.length > 0 || chosen !== null) && (
+        <>
+          {/* Floating Pill when Inspector is Collapsed */}
+          {inspectorCollapsed && (
+            <button
+              type="button"
+              className="inspector-reopen-pill glass"
+              onClick={() => {
+                setInspectorCollapsed(false);
+                setTimeout(() => window.dispatchEvent(new Event('resize')), 220);
+              }}
+              title="Expand Anatomy Inspector"
+              aria-label="Expand Anatomy Inspector"
+            >
+              <span
+                className="reopen-dot"
+                style={{ background: system?.color ?? '#2dd4bf' }}
+              />
+              <span className="reopen-title">
+                {knowledge?.canonicalName ?? chosen?.name ?? 'Inspector'}
               </span>
-              <button
-                className="inspector-close-btn"
-                onClick={() => {
-                  setDetails(false);
-                  setState(s => ({ ...s, selected: [], isolate: false }));
-                }}
-                aria-label="Close Inspector"
-              >
-                <X size={16} />
-              </button>
-            </div>
-            <div className="structure-title-row">
-              <h2 className="inspector-structure-title">
-                {knowledge?.canonicalName ?? chosen?.name}
-              </h2>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
-                <span className="structure-fma-badge">ID: {chosen?.id}</span>
-                {knowledge && (
-                  <span className="verification-badge">
-                    <CheckCircle2 size={11} /> Verified Entry
-                  </span>
-                )}
+              <ChevronLeft size={14} style={{ color: '#2dd4bf' }} />
+            </button>
+          )}
+
+          <aside
+            className={`inspector-panel glass detail-sheet ${inspectorCollapsed ? 'is-collapsed' : ''}`}
+            aria-label="Anatomical Structure Inspector"
+            aria-hidden={inspectorCollapsed}
+          >
+            {/* Header */}
+            <div className="inspector-header">
+              <div className="inspector-header-top">
+                <span className="system-tag">
+                  <span className="system-indicator" style={{ background: system?.color ?? '#2dd4bf' }} />
+                  {knowledge ? knowledge.anatomicalSystem.toUpperCase() : system?.name ?? 'REFERENCE CATALOG'}
+                </span>
+                <div className="inspector-header-controls">
+                  <button
+                    type="button"
+                    className="inspector-collapse-btn"
+                    onClick={() => {
+                      setInspectorCollapsed(true);
+                      setTimeout(() => window.dispatchEvent(new Event('resize')), 220);
+                    }}
+                    title="Collapse Inspector"
+                    aria-label="Collapse Inspector"
+                  >
+                    <Minus size={15} />
+                  </button>
+                  <button
+                    type="button"
+                    className="inspector-close-btn"
+                    onClick={() => {
+                      setDetails(false);
+                      setState(s => ({ ...s, selected: [], isolate: false }));
+                      setChosen(null);
+                    }}
+                    aria-label="Close Inspector"
+                    title="Close Inspector"
+                  >
+                    <X size={16} />
+                  </button>
+                </div>
+              </div>
+              <div className="structure-title-row">
+                <h2 className="inspector-structure-title">
+                  {knowledge?.canonicalName ?? chosen?.name}
+                </h2>
+                <div className="inspector-meta-row">
+                  <span className="structure-fma-badge">ID: {chosen?.id}</span>
+                  {knowledge && (
+                    <span className="verification-badge">
+                      <CheckCircle2 size={11} className="verification-check-icon" /> Verified Entry
+                    </span>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
 
-          {/* Quick Action Bar */}
-          <div className="inspector-actions-bar">
-            <button
-              className={`action-isolate-btn ${state.isolate ? 'is-active' : ''}`}
-              onClick={() => setState(s => ({ ...s, isolate: !s.isolate, explode: 0 }))}
-            >
-              <Focus size={15} />
-              {state.isolate ? 'Show Surrounding Anatomy' : 'Isolate Structure'}
-            </button>
-            <button
-              className="action-clear-btn"
-              onClick={() => {
-                setState(s => ({ ...s, selected: [], isolate: false }));
-                setDetails(false);
-              }}
-            >
-              Deselect
-            </button>
-          </div>
+            {/* Non-visualizable Concept Banner */}
+            {chosen && (!chosen.elements || chosen.elements.length === 0) && (
+              <div className="non-visualizable-callout">
+                <Info size={15} style={{ flexShrink: 0, marginTop: '2px' }} />
+                <div>
+                  <strong>Reference Catalog Concept:</strong> This anatomical concept is indexed with canonical FMA metadata, but has no 3D surface mesh in the loaded model.
+                </div>
+              </div>
+            )}
+
+            {/* Hidden in 3D System Banner & Explicit Reveal Button */}
+            {chosen && chosen.elements && chosen.elements.length > 0 && (() => {
+              const hiddenInfo = isConceptHiddenIn3D(chosen.id);
+              if (!hiddenInfo.isHidden || !hiddenInfo.system) return null;
+              return (
+                <div className="hidden-system-callout">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+                    <EyeOff size={14} style={{ color: '#fbbf24', flexShrink: 0 }} />
+                    <span style={{ color: '#fde68a' }}>
+                      Hidden in 3D: <strong>{hiddenInfo.systemName}</strong> is turned off.
+                    </span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => revealSystemIn3D(hiddenInfo.system!)}
+                    title={`Reveal ${hiddenInfo.systemName} system in 3D without altering your dissection layer`}
+                  >
+                    <Eye size={12} /> Reveal in 3D
+                  </button>
+                </div>
+              );
+            })()}
+
+            {/* Quick Action Bar */}
+            {chosen && chosen.elements && chosen.elements.length > 0 ? (
+              <div className="inspector-actions-bar">
+                <button
+                  type="button"
+                  className={`action-isolate-btn ${state.isolate ? 'is-active' : ''}`}
+                  onClick={() => setState(s => ({ ...s, isolate: !s.isolate, explode: 0 }))}
+                >
+                  <Focus size={14} />
+                  <span>{state.isolate ? 'Show Context' : 'Isolate Structure'}</span>
+                </button>
+                <button
+                  type="button"
+                  className="action-quiz-btn"
+                  onClick={() => startLearningForConcept(chosen.id)}
+                  title="Launch learning challenge for this anatomical structure"
+                >
+                  <GraduationCap size={14} />
+                  <span>Quiz</span>
+                </button>
+                <button
+                  type="button"
+                  className="action-deselect-btn"
+                  onClick={() => {
+                    setState(s => ({ ...s, selected: [], isolate: false }));
+                    setDetails(false);
+                    setChosen(null);
+                  }}
+                  title="Deselect structure"
+                >
+                  <span>Deselect</span>
+                </button>
+              </div>
+            ) : (
+              <div className="inspector-actions-bar">
+                <button
+                  type="button"
+                  className="action-deselect-btn"
+                  onClick={() => {
+                    setDetails(false);
+                    setChosen(null);
+                  }}
+                  style={{ width: '100%' }}
+                >
+                  Close Inspector
+                </button>
+              </div>
+            )}
 
           {/* 4 Tabs: Overview, Anatomy, Function, Clinical Notes */}
           <nav className="inspector-tabs-nav" aria-label="Inspector Information Tabs">
@@ -2051,79 +2788,109 @@ export default function Home() {
             {/* TAB 5: RELATIONSHIPS */}
             {inspectorTab === 'relationships' && (
               <>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div className="inspector-badge" style={{ margin: 0 }}>
-                    <Network size={12} />
-                    <span>Verified Connections ({activeConceptRelationships.length})</span>
+                <div className="rel-summary-header">
+                  <div className="rel-summary-info">
+                    <span className="rel-summary-tag">ANATOMICAL CONNECTIONS</span>
+                    <span className="rel-summary-count">
+                      {activeConceptRelationships.length} {activeConceptRelationships.length === 1 ? 'connection' : 'connections'}
+                    </span>
                   </div>
                   {activeConceptRelationships.length > 0 && (
                     <button
-                      className="rel-open-graph-btn"
+                      type="button"
+                      className="rel-explore-graph-btn"
                       onClick={() => openRelationshipExplorer(chosen?.id || '')}
                       title="Open Interactive Graph View"
                     >
-                      <Share2 size={13} />
                       <span>Explore Graph</span>
+                      <ArrowRight size={13} />
                     </button>
                   )}
                 </div>
 
                 {activeConceptRelationships.length > 0 ? (
-                  <div className="inspector-section">
-                    {(['structural', 'spatial', 'circulatory', 'functional'] as RelationshipCategory[]).map(catKey => {
+                  <div className="rel-groups-container">
+                    {(['spatial', 'structural', 'circulatory', 'functional'] as RelationshipCategory[]).map(catKey => {
                       const rels = activeConceptRelationships.filter(r => r.category === catKey);
                       if (rels.length === 0) return null;
                       const catInfo = RELATIONSHIP_CATEGORY_LABELS[catKey];
                       return (
-                        <div key={catKey} className="rel-cat-group">
-                          <span className="section-label" style={{ marginBottom: '6px' }}>
-                            <span className="rel-cat-dot" style={{ backgroundColor: catInfo.color }} />
-                            {catInfo.label} Relationships ({rels.length})
-                          </span>
-                          <div className="rel-cards-list">
+                        <div key={catKey} className="rel-group-section">
+                          <div className="rel-group-header">
+                            <span className="rel-group-dot" style={{ backgroundColor: catInfo.color }} />
+                            <h4 className="rel-group-title">{catInfo.label} RELATIONSHIPS</h4>
+                            <span className="rel-group-count">({rels.length})</span>
+                          </div>
+                          <div className="rel-cards-stack">
                             {rels.map(({ rel, isOutgoing, otherConceptId, otherConceptName }) => {
                               const hiddenInfo = isConceptHiddenIn3D(otherConceptId);
+                              const citation = findCitationByReference(rel.sourceReference);
                               return (
-                                <div key={rel.id} className="rel-card">
+                                <div key={rel.id} className="rel-structured-card">
                                   <div className="rel-card-header">
-                                    <span className="rel-type-tag" style={{ borderLeftColor: catInfo.color }}>
-                                      {getRelDirectionalLabel(rel.type, isOutgoing)}
-                                    </span>
-                                    <span className="rel-badge-kind">{rel.sourceKind === 'atlas' ? 'Atlas' : 'Verified'}</span>
+                                    <div className="rel-badge-group">
+                                      <span className="rel-type-indicator" style={{ color: catInfo.color }}>
+                                        <span className="rel-dot" style={{ backgroundColor: catInfo.color }} />
+                                        {catInfo.label} RELATIONSHIP
+                                      </span>
+                                      <span className="rel-directional-badge">
+                                        {getRelDirectionalLabel(rel.type, isOutgoing)}
+                                      </span>
+                                    </div>
+                                    <span className="rel-fma-badge">{otherConceptId}</span>
                                   </div>
-                                  <div className="rel-target-title">
-                                    <strong>{otherConceptName}</strong>
-                                    <span className="rel-target-id">({otherConceptId})</span>
+                                  <div className="rel-target-entity">
+                                    <h4 className="rel-target-name">{otherConceptName}</h4>
                                   </div>
                                   <p className="rel-card-explanation">{rel.explanation}</p>
-                                  <div className="rel-card-citation">
-                                    <BookOpen size={11} style={{ flexShrink: 0 }} />
-                                    <span>{rel.sourceReference}</span>
+                                  <div className="rel-card-source">
+                                    <span className="rel-source-caption">Source</span>
+                                    {citation && citation.url ? (
+                                      <a
+                                        href={citation.url}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="rel-source-link"
+                                        title={`Open ${citation.title} (${citation.authoritativeBody})`}
+                                      >
+                                        <BookOpen size={11} style={{ flexShrink: 0 }} />
+                                        <span>{citation.title}</span>
+                                        <ArrowUpRight size={10} style={{ flexShrink: 0 }} />
+                                      </a>
+                                    ) : (
+                                      <span className="rel-source-plain">
+                                        <BookOpen size={11} style={{ flexShrink: 0 }} />
+                                        <span>{rel.sourceReference}</span>
+                                      </span>
+                                    )}
                                   </div>
                                   <div className="rel-card-actions">
                                     <button
-                                      className="rel-card-action-btn primary"
-                                      onClick={() => {
-                                        navigateToConcept(otherConceptId);
-                                      }}
+                                      type="button"
+                                      className="rel-action-btn primary"
+                                      onClick={() => navigateToConcept(otherConceptId)}
+                                      title={`Select and view ${otherConceptName} in 3D`}
                                     >
-                                      <Eye size={12} />
-                                      <span>Select in 3D</span>
+                                      <span>View structure</span>
+                                      <ArrowUpRight size={12} />
                                     </button>
                                     <button
-                                      className="rel-card-action-btn"
+                                      type="button"
+                                      className="rel-action-btn secondary"
                                       onClick={() => openRelationshipExplorer(otherConceptId)}
+                                      title="Open interactive relationship graph"
                                     >
                                       <Network size={12} />
                                       <span>Graph</span>
                                     </button>
                                     {hiddenInfo.isHidden && hiddenInfo.system && (
                                       <button
-                                        className="rel-card-action-btn reveal"
+                                        type="button"
+                                        className="rel-action-btn reveal"
                                         onClick={() => revealSystemIn3D(hiddenInfo.system!)}
-                                        title={`System '${hiddenInfo.systemName}' is currently hidden. Click to reveal in 3D.`}
+                                        title={`System '${hiddenInfo.systemName}' is currently hidden in 3D. Click to reveal.`}
                                       >
-                                        <AlertTriangle size={12} />
+                                        <Eye size={12} />
                                         <span>Reveal ({hiddenInfo.systemName})</span>
                                       </button>
                                     )}
@@ -2152,7 +2919,8 @@ export default function Home() {
             )}
           </div>
         </aside>
-      )}
+      </>
+    )}
 
       {/* Loading Progress State */}
       {progress < 100 && !error && (
@@ -2291,107 +3059,596 @@ export default function Home() {
         </div>
       )}
 
-      {/* Learning Setup Modal */}
+      {/* Learning Setup & Dashboard Modal */}
       {learningSetupOpen && (
         <div
           className="guides-modal-overlay"
           onClick={() => setLearningSetupOpen(false)}
           role="dialog"
           aria-modal="true"
-          aria-label="Learning Mode Setup"
+          aria-label="Interactive Learning Mode and Dashboard"
         >
           <div className="learning-setup-modal-content glass" onClick={e => e.stopPropagation()}>
             <div className="guides-modal-header">
               <div className="guides-modal-title-wrap">
                 <div className="brand-eyebrow">
                   <GraduationCap size={12} style={{ display: 'inline', marginRight: '4px' }} />
-                  KNOWLEDGE TESTING
+                  KNOWLEDGE TESTING & RETENTION
                 </div>
                 <h2 className="guides-modal-title">
                   Interactive Learning Mode
                 </h2>
                 <p className="guides-modal-subtitle">
-                  Challenge yourself with 3D structure location challenges and peer-reviewed multiple-choice questions.
+                  Challenge yourself with 3D anatomical identification and track your lifetime retention across bodily systems.
                 </p>
               </div>
               <button
                 className="guides-modal-close"
                 onClick={() => setLearningSetupOpen(false)}
-                aria-label="Close Learning Setup"
+                aria-label="Close Learning Modal"
               >
                 <X size={18} />
               </button>
             </div>
 
-            {/* Category selection */}
-            <div className="learning-setup-section">
-              <span className="learning-setup-label">Anatomical Focus</span>
-              <div className="learning-chips-grid">
-                {[
-                  { id: 'all', label: 'All Systems (Comprehensive Mix)' },
-                  { id: 'cardiopulmonary', label: 'Cardiopulmonary (Heart & Lungs)' },
-                  { id: 'skeletal', label: 'Skeletal Framework' },
-                  { id: 'visceral', label: 'Visceral Organs (Digestive & Urinary)' },
-                  { id: 'neuro', label: 'Nervous System' }
-                ].map(cat => (
-                  <button
-                    key={cat.id}
-                    className={`learning-chip-btn ${sessionConfig.category === cat.id ? 'active' : ''}`}
-                    onClick={() => setSessionConfig(c => ({ ...c, category: cat.id as any }))}
-                  >
-                    {cat.label}
-                  </button>
-                ))}
-              </div>
+            {/* Navigation Tabs */}
+            <div className="learning-modal-nav-tabs" role="tablist" aria-label="Learning Mode Tabs">
+              <button
+                role="tab"
+                id="tab-challenge"
+                aria-selected={learningModalTab === 'setup'}
+                aria-controls="panel-challenge"
+                className={`learning-modal-nav-tab ${learningModalTab === 'setup' ? 'active' : ''}`}
+                onClick={() => setLearningModalTab('setup')}
+              >
+                <Play size={13} fill={learningModalTab === 'setup' ? 'currentColor' : 'none'} />
+                <span>New Challenge</span>
+              </button>
+              <button
+                role="tab"
+                id="tab-dashboard"
+                aria-selected={learningModalTab === 'dashboard'}
+                aria-controls="panel-dashboard"
+                className={`learning-modal-nav-tab ${learningModalTab === 'dashboard' ? 'active' : ''}`}
+                onClick={() => setLearningModalTab('dashboard')}
+              >
+                <Trophy size={13} />
+                <span>Learner Dashboard</span>
+                {learningProgress.totalSessionsCompleted > 0 && (
+                  <span className="tab-count-badge">{learningProgress.totalSessionsCompleted}</span>
+                )}
+              </button>
+              <button
+                role="tab"
+                id="tab-settings"
+                aria-selected={learningModalTab === 'settings'}
+                aria-controls="panel-settings"
+                className={`learning-modal-nav-tab ${learningModalTab === 'settings' ? 'active' : ''}`}
+                onClick={() => setLearningModalTab('settings')}
+              >
+                <Sliders size={13} />
+                <span>Data & Storage</span>
+              </button>
             </div>
 
-            {/* Difficulty selection */}
-            <div className="learning-setup-section">
-              <span className="learning-setup-label">Difficulty Level</span>
-              <div className="learning-chips-grid">
-                {[
-                  { id: 'all', label: 'All Levels' },
-                  { id: 'Beginner', label: 'Beginner' },
-                  { id: 'Intermediate', label: 'Intermediate' }
-                ].map(diff => (
-                  <button
-                    key={diff.id}
-                    className={`learning-chip-btn ${sessionConfig.difficulty === diff.id ? 'active' : ''}`}
-                    onClick={() => setSessionConfig(c => ({ ...c, difficulty: diff.id as any }))}
-                  >
-                    {diff.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+            {/* TAB 1: NEW CHALLENGE SETUP */}
+            {learningModalTab === 'setup' && (
+              <div id="panel-challenge" role="tabpanel" aria-labelledby="tab-challenge" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* Targeted Concept Banner */}
+                {targetedConcept && (
+                  <div className="learning-target-banner">
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <GraduationCap size={16} style={{ color: '#2dd4bf', flexShrink: 0 }} />
+                      <div>
+                        <span style={{ fontSize: '11px', color: '#94a3b8' }}>Targeted Structure:</span>
+                        <div style={{ fontWeight: 600, color: '#f8fafc', fontSize: '13px' }}>
+                          {targetedConcept.name}
+                        </div>
+                      </div>
+                    </div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      {targetedConcept.hasDirectQuestion ? (
+                        <span className="badge-verified-target">
+                          Direct Question Available
+                        </span>
+                      ) : (
+                        <span className="badge-category-target">
+                          Category Focus
+                        </span>
+                      )}
+                      <button
+                        type="button"
+                        style={{
+                          background: 'none',
+                          border: 'none',
+                          color: '#64748b',
+                          cursor: 'pointer',
+                          padding: '4px',
+                          display: 'inline-flex'
+                        }}
+                        onClick={() => setTargetedConcept(null)}
+                        title="Clear target structure"
+                        aria-label="Clear target structure"
+                      >
+                        <X size={13} />
+                      </button>
+                    </div>
+                  </div>
+                )}
 
-            {/* Question count selection */}
-            <div className="learning-setup-section">
-              <span className="learning-setup-label">Session Length</span>
-              <div className="learning-chips-grid">
-                {[
-                  { count: 5, label: '5 Questions (Quick)' },
-                  { count: 8, label: '8 Questions (Standard)' },
-                  { count: 18, label: 'All Available' }
-                ].map(len => (
-                  <button
-                    key={len.count}
-                    className={`learning-chip-btn ${sessionConfig.questionCount === len.count ? 'active' : ''}`}
-                    onClick={() => setSessionConfig(c => ({ ...c, questionCount: len.count }))}
-                  >
-                    {len.label}
-                  </button>
-                ))}
-              </div>
-            </div>
+                {learningProgress.totalSessionsCompleted > 0 && (
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '8px 12px', background: 'rgba(245, 158, 11, 0.08)', border: '1px solid rgba(245, 158, 11, 0.25)', borderRadius: '8px', fontSize: '11.5px', color: '#fde68a' }}>
+                    <span>
+                      Lifetime Accuracy: <strong>{learningProgress.overallAccuracy}%</strong> across <strong>{learningProgress.totalSessionsCompleted}</strong> {learningProgress.totalSessionsCompleted === 1 ? 'quiz' : 'quizzes'}.
+                    </span>
+                    <button
+                      type="button"
+                      style={{ background: 'none', border: 'none', color: '#f59e0b', cursor: 'pointer', fontWeight: 600, display: 'inline-flex', alignItems: 'center', gap: '3px', fontSize: '11px' }}
+                      onClick={() => setLearningModalTab('dashboard')}
+                    >
+                      Dashboard <ChevronRight size={12} />
+                    </button>
+                  </div>
+                )}
 
-            <button
-              className="learning-start-btn"
-              onClick={() => startLearningSession(sessionConfig)}
-            >
-              <Play size={15} fill="currentColor" />
-              <span>Start Learning Challenge</span>
-            </button>
+                {/* Category selection */}
+                <div className="learning-setup-section">
+                  <span className="learning-setup-label">Anatomical Focus</span>
+                  <div className="learning-chips-grid">
+                    {[
+                      { id: 'all', label: 'All Systems (Comprehensive Mix)' },
+                      { id: 'cardiopulmonary', label: 'Cardiopulmonary (Heart & Lungs)' },
+                      { id: 'skeletal', label: 'Skeletal Framework' },
+                      { id: 'visceral', label: 'Visceral Organs (Digestive & Urinary)' },
+                      { id: 'neuro', label: 'Nervous System' }
+                    ].map(cat => (
+                      <button
+                        key={cat.id}
+                        className={`learning-chip-btn ${sessionConfig.category === cat.id ? 'active' : ''}`}
+                        onClick={() => setSessionConfig(c => ({ ...c, category: cat.id as any }))}
+                      >
+                        {cat.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Difficulty selection */}
+                <div className="learning-setup-section">
+                  <span className="learning-setup-label">Difficulty Level</span>
+                  <div className="learning-chips-grid">
+                    {[
+                      { id: 'all', label: 'All Levels' },
+                      { id: 'Beginner', label: 'Beginner' },
+                      { id: 'Intermediate', label: 'Intermediate' }
+                    ].map(diff => (
+                      <button
+                        key={diff.id}
+                        className={`learning-chip-btn ${sessionConfig.difficulty === diff.id ? 'active' : ''}`}
+                        onClick={() => setSessionConfig(c => ({ ...c, difficulty: diff.id as any }))}
+                      >
+                        {diff.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Question count selection */}
+                <div className="learning-setup-section">
+                  <span className="learning-setup-label">Session Length</span>
+                  <div className="learning-chips-grid">
+                    {[
+                      { count: 5, label: '5 Questions (Quick)' },
+                      { count: 8, label: '8 Questions (Standard)' },
+                      { count: 18, label: 'All Available' }
+                    ].map(len => (
+                      <button
+                        key={len.count}
+                        className={`learning-chip-btn ${sessionConfig.questionCount === len.count ? 'active' : ''}`}
+                        onClick={() => setSessionConfig(c => ({ ...c, questionCount: len.count }))}
+                      >
+                        {len.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <button
+                  className="learning-start-btn"
+                  onClick={() => startLearningSession(sessionConfig)}
+                >
+                  <Play size={15} fill="currentColor" />
+                  <span>Start Learning Challenge</span>
+                </button>
+              </div>
+            )}
+
+            {/* TAB 2: LEARNER DASHBOARD */}
+            {learningModalTab === 'dashboard' && (
+              <div id="panel-dashboard" role="tabpanel" aria-labelledby="tab-dashboard" style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+                {/* 4 Lifetime Metric Cards */}
+                <div className="learning-metrics-grid">
+                  <div className="learning-metric-card">
+                    <span className="learning-metric-label">Quizzes Completed</span>
+                    <span className="learning-metric-value">{learningProgress.totalSessionsCompleted}</span>
+                    <span className="learning-metric-sub">Lifetime sessions</span>
+                  </div>
+                  <div className="learning-metric-card">
+                    <span className="learning-metric-label">Questions Answered</span>
+                    <span className="learning-metric-value">{learningProgress.totalQuestionsAnswered}</span>
+                    <span className="learning-metric-sub">{learningProgress.totalCorrectAnswers} correct answers</span>
+                  </div>
+                  <div className="learning-metric-card">
+                    <span className="learning-metric-label">Overall Accuracy</span>
+                    <span
+                      className="learning-metric-value"
+                      style={{ color: learningProgress.overallAccuracy >= 75 ? '#34d399' : learningProgress.totalQuestionsAnswered > 0 ? '#f59e0b' : '#f8fafc' }}
+                    >
+                      {learningProgress.overallAccuracy}%
+                    </span>
+                    <span className="learning-metric-sub">
+                      {learningProgress.totalQuestionsAnswered > 0
+                        ? learningProgress.overallAccuracy >= 75
+                          ? 'High mastery tier'
+                          : 'Developing proficiency'
+                        : 'No attempts yet'}
+                    </span>
+                  </div>
+                  <div className="learning-metric-card">
+                    <span className="learning-metric-label">Best Quiz Score</span>
+                    <span className="learning-metric-value" style={{ color: '#38bdf8' }}>
+                      {learningProgress.bestScorePercentage}%
+                    </span>
+                    <span className="learning-metric-sub">
+                      {learningProgress.bestScoreDetail
+                        ? `${learningProgress.bestScoreDetail.score}/${learningProgress.bestScoreDetail.total} in ${learningProgress.bestScoreDetail.category}`
+                        : 'No quizzes yet'}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Empty State for First-Time Learners */}
+                {learningProgress.totalSessionsCompleted === 0 ? (
+                  <div className="learning-empty-dashboard">
+                    <div className="learning-empty-icon">
+                      <GraduationCap size={28} />
+                    </div>
+                    <h3 style={{ margin: 0, fontSize: '15px', color: '#f8fafc', fontWeight: 600 }}>
+                      No Learning History Recorded
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', maxWidth: '440px', lineHeight: 1.45 }}>
+                      Complete your first 3D structure identification challenge or multiple-choice quiz to unlock mastery metrics, topic performance analytics, and retention tracking.
+                    </p>
+                    <button
+                      className="learning-start-btn"
+                      style={{ maxWidth: '240px', marginTop: '6px' }}
+                      onClick={() => setLearningModalTab('setup')}
+                    >
+                      <Play size={14} fill="currentColor" />
+                      <span>Start Your First Quiz</span>
+                    </button>
+                  </div>
+                ) : (
+                  <>
+                    {/* Topic-Level Performance Breakdown */}
+                    <div className="learning-topic-section">
+                      <div className="learning-topic-header">
+                        <span className="learning-topic-title">Anatomical System Mastery</span>
+                        <span style={{ fontSize: '11px', color: '#64748b' }}>
+                          {topicStats.allTopics.length} {topicStats.allTopics.length === 1 ? 'system' : 'systems'} tested
+                        </span>
+                      </div>
+
+                      {/* Strong Topics vs Topics Needing Practice */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
+                        {/* Strong Topics */}
+                        <div style={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(52, 211, 153, 0.04)', border: '1px solid rgba(52, 211, 153, 0.15)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: '#34d399', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            Strong Topics (≥ 75%)
+                          </span>
+                          {topicStats.strongTopics.length > 0 ? (
+                            <div className="learning-topic-pills-row">
+                              {topicStats.strongTopics.map(t => (
+                                <span key={t.system} className="learning-topic-pill strong" title={`${t.correctCount} of ${t.totalAnswered} correct`}>
+                                  <Check size={11} />
+                                  <span>{t.systemName}</span>
+                                  <strong style={{ marginLeft: '2px' }}>{t.accuracy}%</strong>
+                                </span>
+                              ))}
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: '#64748b' }}>
+                              Score ≥ 75% in a system to register strength.
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Topics Needing Practice */}
+                        <div style={{ padding: '10px 12px', borderRadius: '8px', background: 'rgba(245, 158, 11, 0.04)', border: '1px solid rgba(245, 158, 11, 0.15)', display: 'flex', flexDirection: 'column', gap: '6px' }}>
+                          <span style={{ fontSize: '11px', fontWeight: 600, color: '#f59e0b', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                            Needs Practice (&lt; 75%)
+                          </span>
+                          {topicStats.practiceTopics.length > 0 ? (
+                            <div className="learning-topic-pills-row">
+                              {topicStats.practiceTopics.map(t => {
+                                const targetCategory = SYSTEM_TO_CATEGORY_MAP[t.system] ?? 'all';
+                                return (
+                                  <div key={t.system} style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}>
+                                    <span className="learning-topic-pill practice" title={`${t.correctCount} of ${t.totalAnswered} correct`}>
+                                      <AlertTriangle size={11} />
+                                      <span>{t.systemName}</span>
+                                      <strong style={{ marginLeft: '2px' }}>{t.accuracy}%</strong>
+                                    </span>
+                                    <button
+                                      className="learning-topic-action-btn"
+                                      title={`Practice ${t.systemName} questions`}
+                                      onClick={() => {
+                                        setSessionConfig(c => ({ ...c, category: targetCategory }));
+                                        setLearningModalTab('setup');
+                                      }}
+                                    >
+                                      Practice
+                                    </button>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          ) : (
+                            <span style={{ fontSize: '11px', color: '#64748b' }}>
+                              All tested topics meet or exceed 75% accuracy.
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* System Progress Bars */}
+                      <div className="learning-topic-bars-list" style={{ marginTop: '4px' }}>
+                        {topicStats.allTopics.map(t => (
+                          <div key={t.system} className="learning-topic-bar-row">
+                            <div className="learning-topic-bar-top">
+                              <span className="learning-topic-bar-name">{t.systemName}</span>
+                              <span className="learning-topic-bar-score">
+                                {t.correctCount}/{t.totalAnswered} ({t.accuracy}%)
+                              </span>
+                            </div>
+                            <div className="learning-progress-track">
+                              <div
+                                className="learning-progress-fill"
+                                style={{
+                                  width: `${t.accuracy}%`,
+                                  background: t.accuracy >= 75 ? '#34d399' : t.accuracy >= 50 ? '#f59e0b' : '#f87171'
+                                }}
+                                role="progressbar"
+                                aria-valuenow={t.accuracy}
+                                aria-valuemin={0}
+                                aria-valuemax={100}
+                                aria-label={`${t.systemName} accuracy ${t.accuracy}%`}
+                              />
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Guided Tour Milestones */}
+                    <div className="learning-topic-section">
+                      <div className="learning-topic-header">
+                        <span className="learning-topic-title">Guided Exploration Milestones</span>
+                        <span style={{ fontSize: '11px', color: '#64748b' }}>
+                          {learningProgress.completedGuideIds.length} of {GUIDED_EXPLORATIONS.length} Completed
+                        </span>
+                      </div>
+                      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '8px' }}>
+                        {GUIDED_EXPLORATIONS.map(guide => {
+                          const isDone = learningProgress.completedGuideIds.includes(guide.id);
+                          return (
+                            <div
+                              key={guide.id}
+                              style={{
+                                padding: '10px 12px',
+                                borderRadius: '8px',
+                                background: isDone ? 'rgba(52, 211, 153, 0.05)' : 'rgba(255, 255, 255, 0.02)',
+                                border: isDone ? '1px solid rgba(52, 211, 153, 0.25)' : '1px solid rgba(255, 255, 255, 0.06)',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '6px'
+                              }}
+                            >
+                              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                                <span style={{ fontSize: '11.5px', fontWeight: 600, color: '#f8fafc' }}>
+                                  {guide.title}
+                                </span>
+                                {isDone ? (
+                                  <span style={{ fontSize: '10px', color: '#34d399', display: 'inline-flex', alignItems: 'center', gap: '3px', fontWeight: 600 }}>
+                                    <CheckCircle2 size={11} /> Done
+                                  </span>
+                                ) : (
+                                  <span style={{ fontSize: '10px', color: '#64748b' }}>Pending</span>
+                                )}
+                              </div>
+                              <span style={{ fontSize: '10.5px', color: '#94a3b8' }}>
+                                {guide.steps.length} interactive steps · {guide.category}
+                              </span>
+                              {!isDone && (
+                                <button
+                                  className="learning-topic-action-btn"
+                                  style={{ alignSelf: 'flex-start', marginTop: '2px' }}
+                                  onClick={() => {
+                                    setLearningSetupOpen(false);
+                                    startGuide(guide);
+                                  }}
+                                >
+                                  Start Tour →
+                                </button>
+                              )}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    {/* Recent Quiz Attempts List */}
+                    <div className="learning-topic-section">
+                      <div className="learning-topic-header">
+                        <span className="learning-topic-title">
+                          Recent Quiz History ({learningProgress.recentAttempts.length})
+                        </span>
+                        <span style={{ fontSize: '11px', color: '#64748b' }}>
+                          Chronological log
+                        </span>
+                      </div>
+                      <div className="learning-history-list">
+                        {learningProgress.recentAttempts.map((att, idx) => (
+                          <div key={att.id || idx} className="learning-history-card">
+                            <div className="learning-history-left">
+                              <span className="learning-history-title">
+                                {att.category.charAt(0).toUpperCase() + att.category.slice(1)} Challenge
+                              </span>
+                              <span className="learning-history-meta">
+                                {new Date(att.timestamp).toLocaleDateString()} at{' '}
+                                {new Date(att.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })} · {att.difficulty}
+                              </span>
+                            </div>
+                            <div className="learning-history-right">
+                              <span className="learning-history-score">
+                                {att.score}/{att.totalQuestions}
+                              </span>
+                              <span
+                                className="learning-history-pct-badge"
+                                style={{
+                                  background: att.percentage >= 80 ? 'rgba(52, 211, 153, 0.15)' : att.percentage >= 60 ? 'rgba(245, 158, 11, 0.15)' : 'rgba(248, 113, 113, 0.15)',
+                                  color: att.percentage >= 80 ? '#34d399' : att.percentage >= 60 ? '#fbbf24' : '#f87171'
+                                }}
+                              >
+                                {att.percentage}%
+                              </span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+
+            {/* TAB 3: DATA & STORAGE MANAGEMENT */}
+            {learningModalTab === 'settings' && (
+              <div id="panel-settings" role="tabpanel" aria-labelledby="tab-settings" style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
+                <div className="learning-settings-card">
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <Info size={16} style={{ color: '#38bdf8', flexShrink: 0 }} />
+                    <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#f8fafc' }}>
+                      Browser Local Storage Architecture
+                    </span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8', lineHeight: 1.5 }}>
+                    Your quiz history, system accuracy scores, and guided tour milestones are persisted locally in this browser's <code>localStorage</code> under the versioned schema key <code>anatomy-explorer-learning-v1</code>. No remote server or external tracking account is used.
+                  </p>
+                  <div style={{ display: 'flex', gap: '8px', fontSize: '11px', color: '#64748b' }}>
+                    <span>Total sessions recorded: <strong>{learningProgress.totalSessionsCompleted}</strong></span>
+                    <span>·</span>
+                    <span>Recent entries stored: <strong>{learningProgress.recentAttempts.length}</strong></span>
+                  </div>
+                </div>
+
+                {dataImportStatus && (
+                  <div
+                    style={{
+                      padding: '10px 12px',
+                      borderRadius: '8px',
+                      fontSize: '12px',
+                      display: 'flex',
+                      alignItems: 'center',
+                      gap: '8px',
+                      background: dataImportStatus.isError ? 'rgba(239, 68, 68, 0.1)' : 'rgba(52, 211, 153, 0.1)',
+                      border: `1px solid ${dataImportStatus.isError ? 'rgba(239, 68, 68, 0.3)' : 'rgba(52, 211, 153, 0.3)'}`,
+                      color: dataImportStatus.isError ? '#f87171' : '#34d399'
+                    }}
+                  >
+                    {dataImportStatus.isError ? <AlertCircle size={14} /> : <CheckCircle2 size={14} />}
+                    <span>{dataImportStatus.message}</span>
+                  </div>
+                )}
+
+                <div className="learning-settings-card">
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#f8fafc' }}>
+                    Export & Backup History
+                  </span>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
+                    Download your complete learning record as a standardized JSON file to transfer between browsers or create an offline backup.
+                  </p>
+                  <div className="learning-settings-actions-row">
+                    <button
+                      type="button"
+                      className="learning-settings-btn"
+                      onClick={handleExportHistory}
+                    >
+                      <Download size={13} />
+                      <span>Export Learning Record (.json)</span>
+                    </button>
+
+                    <label className="learning-settings-btn" style={{ margin: 0 }}>
+                      <Upload size={13} />
+                      <span>Import Learning Record (.json)</span>
+                      <input
+                        type="file"
+                        accept=".json,application/json"
+                        style={{ display: 'none' }}
+                        onChange={handleImportHistory}
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div className="learning-settings-card" style={{ borderColor: 'rgba(239, 68, 68, 0.2)' }}>
+                  <span style={{ fontSize: '12.5px', fontWeight: 600, color: '#f87171' }}>
+                    Danger Zone: Reset Learning History
+                  </span>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#94a3b8' }}>
+                    Permanently clear all stored quiz scores, lifetime accuracy metrics, and tour completion flags.
+                  </p>
+
+                  {!confirmResetOpen ? (
+                    <div>
+                      <button
+                        type="button"
+                        className="learning-settings-btn destructive"
+                        onClick={() => setConfirmResetOpen(true)}
+                      >
+                        <Trash2 size={13} />
+                        <span>Reset All Progress...</span>
+                      </button>
+                    </div>
+                  ) : (
+                    <div style={{ padding: '12px', background: 'rgba(239, 68, 68, 0.08)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '8px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                      <span style={{ fontSize: '12px', color: '#fca5a5', fontWeight: 600 }}>
+                        Are you sure you want to permanently reset all learning metrics?
+                      </span>
+                      <span style={{ fontSize: '11px', color: '#94a3b8' }}>
+                        This action clears local quiz logs. The 3D anatomical viewer, models, and systems are unaffected.
+                      </span>
+                      <div style={{ display: 'flex', gap: '8px', marginTop: '4px' }}>
+                        <button
+                          type="button"
+                          className="learning-settings-btn destructive"
+                          onClick={handleResetLearning}
+                        >
+                          Yes, Reset Learning Record
+                        </button>
+                        <button
+                          type="button"
+                          className="learning-settings-btn"
+                          onClick={() => setConfirmResetOpen(false)}
+                        >
+                          Cancel
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}
@@ -2472,20 +3729,36 @@ export default function Home() {
             </div>
 
             {/* Action Buttons */}
-            <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+            <div style={{ display: 'flex', gap: '8px', marginTop: '6px', flexWrap: 'wrap' }}>
               <button
                 className="learning-start-btn"
+                style={{ flex: 1, minWidth: '130px' }}
                 onClick={() => {
                   setLearningResultsOpen(false);
+                  setTargetedConcept(null);
                   setLearningSetupOpen(true);
+                  setLearningModalTab('setup');
                 }}
               >
                 <RotateCcw size={14} />
-                <span>New Session</span>
+                <span>New Challenge</span>
+              </button>
+              <button
+                className="guide-nav-btn guide-nav-btn-next"
+                style={{ flex: 1, minWidth: '130px', justifyContent: 'center' }}
+                onClick={() => {
+                  setLearningResultsOpen(false);
+                  setTargetedConcept(null);
+                  setLearningSetupOpen(true);
+                  setLearningModalTab('dashboard');
+                }}
+              >
+                <Trophy size={14} />
+                <span>View Dashboard</span>
               </button>
               <button
                 className="guide-nav-btn guide-nav-btn-prev"
-                style={{ flex: 1, justifyContent: 'center' }}
+                style={{ flex: 1, minWidth: '120px', justifyContent: 'center' }}
                 onClick={() => setLearningResultsOpen(false)}
               >
                 Return to Explorer
@@ -2580,16 +3853,51 @@ export default function Home() {
             {/* Quick Hub Navigator Strip */}
             <div className="rel-hub-strip">
               <span className="rel-hub-label">Quick Hubs:</span>
-              {[
-                { id: 'FMA7088', name: 'Heart' },
-                { id: 'FMA3736', name: 'Ascending Aorta' },
-                { id: 'FMA50801', name: 'Brain' },
-                { id: 'FMA7148', name: 'Stomach' },
-                { id: 'FMA7197', name: 'Liver' },
-                { id: 'FMA7203', name: 'Kidneys' },
-                { id: 'FMA7195', name: 'Lungs' },
-                { id: 'FMA7394', name: 'Trachea' }
-              ].map(hub => {
+              {RELATIONSHIP_QUICK_HUBS.map(hub => {
+                if (hub.isBilateralGroup && hub.subConcepts) {
+                  const isAnyActive = hub.subConcepts.some(c => c.id === relationshipActiveConceptId);
+                  return (
+                    <div key={hub.name} className="rel-hub-group">
+                      <button
+                        className={`rel-hub-chip ${isAnyActive ? 'active' : ''}`}
+                        onClick={() => {
+                          const targetId = isAnyActive ? relationshipActiveConceptId : hub.id;
+                          setRelationshipActiveConceptId(targetId);
+                          setRelationshipRootConceptId(targetId);
+                          setSelectedGraphNodeId(targetId);
+                          setSelectedEdge(null);
+                          navigateToConcept(targetId);
+                        }}
+                        title={`Bilateral ${hub.name} (${hub.subConcepts.map(c => c.name).join(' & ')})`}
+                        aria-label={`${hub.name} Hub`}
+                      >
+                        {hub.name}
+                      </button>
+                      <div className="rel-hub-subchips">
+                        {hub.subConcepts.map(sub => {
+                          const isSubActive = relationshipActiveConceptId === sub.id;
+                          return (
+                            <button
+                              key={sub.id}
+                              className={`rel-hub-subchip ${isSubActive ? 'active' : ''}`}
+                              onClick={() => {
+                                setRelationshipActiveConceptId(sub.id);
+                                setRelationshipRootConceptId(sub.id);
+                                setSelectedGraphNodeId(sub.id);
+                                setSelectedEdge(null);
+                                navigateToConcept(sub.id);
+                              }}
+                              title={`Select ${sub.name}`}
+                              aria-label={`Select ${sub.name}`}
+                            >
+                              {sub.name.includes('Right') ? 'Right' : sub.name.includes('Left') ? 'Left' : sub.name}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  );
+                }
                 const isActive = relationshipActiveConceptId === hub.id;
                 return (
                   <button

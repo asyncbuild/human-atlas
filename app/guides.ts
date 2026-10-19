@@ -1,4 +1,5 @@
 import type { View } from './anatomy';
+import { getCitationSource } from './citations.ts';
 
 export type GuideDifficulty = 'Beginner' | 'Intermediate' | 'Advanced';
 
@@ -49,13 +50,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Identify apical orientation pointing anteroinferiorly to the left'
         ],
         cameraView: 'front',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Thorax, Heart',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK470256/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('heart')]
       },
       {
         id: 'cardio-step-2',
@@ -69,13 +64,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Identify thoracic and abdominal cavity partitioning'
         ],
         cameraView: 'front',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Abdomen and Pelvis, Diaphragm',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK537042/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('diaphragm')]
       },
       {
         id: 'cardio-step-3',
@@ -89,13 +78,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Identify pulmonary venous return to the left atrium'
         ],
         cameraView: 'three-quarter',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Thorax, Lungs',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK470197/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('lungs')]
       }
     ]
   },
@@ -119,13 +102,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Observe suture junctions between major cranial plates'
         ],
         cameraView: 'three-quarter',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Head and Neck, Skull',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK538180/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('skull')]
       },
       {
         id: 'skel-step-2',
@@ -139,13 +116,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Identify neural arch protection around the spinal cord'
         ],
         cameraView: 'side',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Back, Vertebral Column',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK525969/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('vertebral_column')]
       },
       {
         id: 'skel-step-3',
@@ -159,13 +130,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Examine distal condyles forming the hinge elbow joint'
         ],
         cameraView: 'front',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Shoulder and Upper Limb, Humerus',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK534821/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('humerus')]
       },
       {
         id: 'skel-step-4',
@@ -179,13 +144,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Examine distal bicondylar articulation with the tibial plateau'
         ],
         cameraView: 'front',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Bony Pelvis and Lower Limb, Femur',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK532982/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('femur')]
       }
     ]
   },
@@ -209,13 +168,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Identify bifurcation at the carina into primary bronchi'
         ],
         cameraView: 'front',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Thorax, Trachea',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK448074/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('trachea')]
       },
       {
         id: 'resp-step-2',
@@ -229,13 +182,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Compare right lung volume and bronchopulmonary segments'
         ],
         cameraView: 'front',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Thorax, Lungs',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK470197/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('lungs')]
       },
       {
         id: 'resp-step-3',
@@ -249,13 +196,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Observe mediastinal impressions created by the heart and aorta'
         ],
         cameraView: 'three-quarter',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Thorax, Lungs',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK470197/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('lungs')]
       },
       {
         id: 'resp-step-4',
@@ -269,13 +210,7 @@ export const GUIDED_EXPLORATIONS: GuidedExploration[] = [
           'Distinguish active inspiration from passive elastic expiration'
         ],
         cameraView: 'front',
-        sources: [
-          {
-            title: 'StatPearls: Anatomy, Abdomen and Pelvis, Diaphragm',
-            url: 'https://www.ncbi.nlm.nih.gov/books/NBK537042/',
-            authoritativeBody: 'National Center for Biotechnology Information (NCBI)'
-          }
-        ]
+        sources: [getCitationSource('diaphragm')]
       }
     ]
   }
