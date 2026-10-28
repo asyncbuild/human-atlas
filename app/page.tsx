@@ -21,9 +21,7 @@ import {
   EyeOff,
   FileText,
   Focus,
-  GitFork,
   GraduationCap,
-  Hash,
   HeartPulse,
   HelpCircle,
   Info,
@@ -42,9 +40,7 @@ import {
   Scissors,
   Search,
   Share2,
-  BarChart2,
   Download,
-  History,
   ShieldAlert,
   Sliders,
   Sparkles,
@@ -79,7 +75,6 @@ import {findKnowledgeForConcept, KNOWLEDGE_BASE} from './knowledge';
 import {
   buildAnatomySearchIndex,
   executeAnatomySearch,
-  type AnatomySearchIndex,
   type SearchResultItem
 } from './anatomy-search';
 import {GUIDED_EXPLORATIONS, type GuidedExploration} from './guides';
@@ -102,9 +97,7 @@ import {
   createEmptyLearningState,
   LEARNING_STORAGE_KEY,
   SYSTEM_TO_CATEGORY_MAP,
-  SYSTEM_TO_GUIDE_MAP,
-  type PersistentLearningState,
-  type QuizAttemptRecord
+  type PersistentLearningState
 } from './learning-progress';
 import {
   DISSECTION_PRESETS,
@@ -117,19 +110,15 @@ import {
   type ProgressiveLayer
 } from './dissection';
 import {
-  VERIFIED_RELATIONSHIPS,
   RELATIONSHIP_CATEGORY_LABELS,
   RELATIONSHIP_TYPE_LABELS,
   RELATIONSHIP_QUICK_HUBS,
   getRelationshipsForConcept,
   hasRelationshipsForConcept,
   buildRelationshipGraph,
-  type AnatomicalRelationship,
   type RelationshipCategory,
   type AnatomicalRelationshipType,
-  type RelationshipGraphNode,
-  type RelationshipGraphEdge,
-  type RelationshipGraphData
+  type RelationshipGraphEdge
 } from './relationships';
 
 const initial: SceneState = {
@@ -272,7 +261,9 @@ export default function Home() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === '/' && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+      const isInput = e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement;
+
+      if (e.key === '/' && !isInput) {
         e.preventDefault();
         searchInputRef.current?.focus();
         setIsSearching(true);
@@ -294,8 +285,26 @@ export default function Home() {
         setIsSearching(false);
         setQuery('');
         searchInputRef.current?.blur();
+        // Dismiss inspection and deselect active structure
+        setDetails(false);
+        setChosen(null);
+        setState(s => (s.selected.length > 0 || s.isolate ? { ...s, selected: [], isolate: false } : s));
       }
-      if (activeGuideRef.current && !(e.target instanceof HTMLInputElement) && !(e.target instanceof HTMLTextAreaElement)) {
+      if (!isInput && !activeGuideRef.current && !activeLearningRef.current) {
+        if (e.key === ' ') {
+          e.preventDefault();
+          setState(s => ({ ...s, rotate: !s.rotate }));
+        }
+        if (['1', '2', '3', '4'].includes(e.key)) {
+          const views: View[] = ['three-quarter', 'front', 'side', 'back'];
+          const targetView = views[parseInt(e.key, 10) - 1];
+          if (targetView) {
+            e.preventDefault();
+            setState(s => ({ ...s, view: targetView, reset: s.reset + 1, rotate: false }));
+          }
+        }
+      }
+      if (activeGuideRef.current && !isInput) {
         if (e.key === 'ArrowRight' || e.key === 'PageDown') {
           if (currentStepIndexRef.current < activeGuideRef.current.steps.length - 1) {
             e.preventDefault();
@@ -1132,17 +1141,20 @@ export default function Home() {
             />
             {query ? (
               <button
+                type="button"
                 className="search-clear"
                 onClick={() => {
                   setQuery('');
                   setIsSearching(false);
+                  searchInputRef.current?.focus();
                 }}
                 aria-label="Clear search"
+                title="Clear search query"
               >
                 <X size={14} />
               </button>
             ) : (
-              <kbd className="search-shortcut">/</kbd>
+              <kbd className="search-shortcut" title="Press '/' to search">/</kbd>
             )}
           </div>
 
@@ -1547,16 +1559,23 @@ export default function Home() {
         >
           <Layers3 size={16} />
         </button>
-        {(['three-quarter', 'front', 'side', 'back'] as View[]).map((v, i) => (
+        {(
+          [
+            { view: 'three-quarter', label: '¾', name: 'Three-Quarter Perspective (¾)', key: '1' },
+            { view: 'front', label: 'F', name: 'Anterior / Frontal Coronal View (F)', key: '2' },
+            { view: 'side', label: 'S', name: 'Lateral Sagittal View (S)', key: '3' },
+            { view: 'back', label: 'B', name: 'Posterior / Back View (B)', key: '4' }
+          ] as const
+        ).map(({ view: v, label, name, key }) => (
           <button
             key={v}
             className={`camera-btn ${state.view === v ? 'active' : ''}`}
             disabled={state.explode > 0.8 && v !== 'front'}
             onClick={() => setState(s => ({ ...s, view: v, reset: s.reset + 1, rotate: false }))}
-            title={`${v} view`}
-            aria-label={`${v} view`}
+            title={`${name} [Key: ${key}]`}
+            aria-label={name}
           >
-            {['¾', 'F', 'S', 'B'][i]}
+            {label}
           </button>
         ))}
         <div className="toolbar-divider" />

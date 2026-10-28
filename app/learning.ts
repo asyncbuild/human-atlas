@@ -1,4 +1,4 @@
-import type { SystemId, View, Atlas, Concept } from './anatomy';
+import type { SystemId, View, Atlas } from './anatomy';
 import { getCitationSource } from './citations.ts';
 
 export type QuestionType = 'identification' | 'multiple-choice' | 'true-false';
